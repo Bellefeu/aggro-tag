@@ -1,5 +1,6 @@
 package com.aggrotag;
 
+import com.google.gson.Gson;
 import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
 
@@ -204,7 +205,10 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     @Inject
     private net.runelite.client.plugins.slayer.SlayerPluginService slayerPluginService;
 
-    private final NpcDataLoader npcDataLoader = new NpcDataLoader();
+    @Inject
+    private Gson gson;
+
+    private NpcDataLoader npcDataLoader;
 
     // ── Tolerance Tracking State
     // ──────────────────────────────────────────────────
@@ -228,6 +232,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
 
     @Override
     protected void startUp() {
+        npcDataLoader = new NpcDataLoader(gson);
         npcDataLoader.load();
         updateUserLists();
         overlayManager.add(overlay);

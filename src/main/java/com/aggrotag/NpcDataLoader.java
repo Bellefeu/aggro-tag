@@ -64,13 +64,18 @@ public class NpcDataLoader {
     private Map<String, NpcRecord> dataMap = Collections.emptyMap();
 
     /** Reads and parses the bundled JSON. Call once during plugin start-up. */
+    private final Gson gson;
+
+    public NpcDataLoader(Gson gson) {
+        this.gson = gson;
+    }
+
     public void load() {
         try (InputStream in = NpcDataLoader.class.getResourceAsStream(RESOURCE_PATH)) {
             if (in == null) {
                 log.error("NpcDataLoader: resource not found at {}", RESOURCE_PATH);
                 return;
             }
-            Gson gson = new Gson();
             Type type = new TypeToken<Map<String, NpcRecord>>() {}.getType();
             dataMap = gson.fromJson(new InputStreamReader(in, StandardCharsets.UTF_8), type);
             log.debug("NpcDataLoader: loaded data for {} NPCs", dataMap.size());
