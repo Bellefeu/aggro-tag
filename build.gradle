@@ -1,0 +1,36 @@
+plugins {
+    id 'java'
+}
+
+group   = 'com.aggrotag'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+def runeLiteVersion = 'latest.release'
+
+repositories {
+    mavenLocal()
+    maven { url = 'https://repo.runelite.net' }
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly group: 'net.runelite', name: 'client', version: runeLiteVersion
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    testImplementation group: 'net.runelite', name: 'client', version: runeLiteVersion
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-Xlint:deprecation'
+}
+
+tasks.withType(Test).configureEach {
+    enabled = false
+}
