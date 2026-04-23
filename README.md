@@ -1,127 +1,91 @@
 # Aggro Tag — RuneLite Plugin
 
-Shows a **red name tag** above any NPC that will attack your player on sight.  
-Optionally shows the NPC's **estimated max hit in yellow** (toggle in plugin config).
+> Shows a **coloured name tag** above any NPC that will attack you on sight, with optional max hit display, aggression radius, and Line of Sight visualisation.
 
 ---
 
-## What It Detects
+## Features
 
-| Aggression Type | How It Works |
+| Feature | Description |
 |---|---|
-| **Level-based** | NPC combat level > 2× your combat level (standard OSRS rule) |
-| **Always-aggressive** | Hardcoded list: Wilderness bosses, Revenants, Abyssal creatures, Slayer monsters, and more |
-
-### ⚠️ Known Gaps (would need extra work to add)
-- **God Wars Dungeon** — faction aggression depends on worn items and kill count
-- **Slayer-task aggressors** — only attack while you're assigned their task
-- **Quest-dependent** — some NPCs turn aggressive mid-quest (e.g. certain story moments)
-- **10-minute de-aggro timer** — level-based aggressors stop attacking after ~10 min; this plugin can't track that timer (yet)
+| **Aggro Name Tags** | Red name above NPCs that will attack you. Orange when actively chasing you. |
+| **Max Hit Display** | Shows each NPC's max hit next to their name, coloured by attack style (melee/ranged/magic). |
+| **Aggression Radius** | Visualises the tile radius in which an NPC will notice you. Supports Line of Sight shaping. |
+| **10-Minute Tolerance** | Automatically hides tags after you've been in an area long enough for NPCs to lose interest. |
+| **God Wars Dungeon** | Full faction item detection — wearing the right god item suppresses that faction's tags. |
+| **Slayer Integration** | Task-only aggressors (Kurasks, Wyverns, etc.) are only tagged when you're on their task. |
+| **Disguise Detection** | Handles Ape Atoll Greegrees, Darkmeyer Vyre noble clothing, Mourner gear, Ethereum Bracelet, and more. |
+| **Minigame Mode** | Automatically adjusts behaviour inside the Inferno, NMZ, Gauntlet, CoX, ToB, and ToA. |
+| **Manual Overrides** | Add any NPC ID to a permanent aggro or passive list via the config panel. |
+| **Square Marker** | Replace name tags with a customisable coloured square marker. |
+| **HP % Display** | Shows the NPC's max hit as a percentage of your current HP — values over 100% mean a potential one-shot. |
+| **Single Combat Dimming** | Dims tags for NPCs that can't currently reach you when your combat slot is occupied. |
 
 ---
 
-## Setup Guide (Beginner)
+## How Aggression Is Determined
 
-### Step 1 — Install Prerequisites
+The plugin evaluates aggression in priority order:
 
-You need these three things before doing anything else:
+1. **Manual overrides** — your config list always wins
+2. **Hard-coded passive IDs** — e.g. Lumbridge Goblins
+3. **OSRS Wiki data** — per-NPC aggression flags sourced from `npc_data.json` (built from Wiki Infobox Monster templates)
+4. **Always-aggressive list** — Wilderness bosses, Revenants, GWD bosses/minions, etc. (exempt from the 2× rule)
+5. **Standard 2× combat level rule** — NPC level × 2 ≥ your combat level
+6. **Name-based heuristics** — fallback for NPCs absent from the dataset
 
-| Tool | Download | Why |
+### Known Limitation
+Quest-state aggression — some NPCs become hostile mid-quest and revert after. The plugin falls back to the 2× rule for these.
+
+---
+
+## Configuration
+
+All options are in the RuneLite config panel under **Aggro Tag**.
+
+### General
+| Option | Default | Description |
 |---|---|---|
-| **JDK 11** | https://adoptium.net/temurin/releases/?version=11 | RuneLite is built on Java 11 |
-| **IntelliJ IDEA Community** | https://www.jetbrains.com/idea/download | Free Java IDE |
-| **RuneLite** (already installed?) | https://runelite.net | The game client |
+| Aggro Tag Color | Red | Name tag colour for NPCs that will attack |
+| Targeting-You Color | Orange | Name tag colour when an NPC is actively chasing you |
+| Base Tag Opacity % | 100 | Overall tag transparency |
+| Vertical Position Shift | 0 | Move tags up or down on screen |
+| Dim Others in Single Combat | On | Dims tags when your combat slot is occupied |
+| Show Tagged NPC ID | Off | Appends NPC ID to the left of the tag |
+| Show Untagged NPC ID | Off | Shows NPC ID for all non-tagged NPCs |
+| Manual Aggressive IDs | — | Comma-separated NPC IDs to always highlight |
+| Manual Passive IDs | — | Comma-separated NPC IDs to never highlight |
 
-> ✅ During JDK install, make sure "Set JAVA_HOME" is checked.
+### Max Hit
+| Option | Default | Description |
+|---|---|---|
+| Show Max Hit | On | Displays max hit next to the name tag |
+| Color by Attack Style | Off | Separate colours per style: yellow=melee, green=ranged, blue=magic |
+| Show Max Hit as % of HP | Off | Appends e.g. `· 25%` after the number |
+| Custom HP % Colors | Off | Colour the % by danger thresholds |
 
----
+### Aggression Radius
+| Option | Default | Description |
+|---|---|---|
+| Show All Hotkey | Alt | Hold to reveal all aggression radii |
+| Toggle (Instead of Hold) | Off | Press once to lock radius on/off |
+| Show on Mouse Hover | Off | Reveal radius when hovering over an NPC |
+| Aggression Radius (Tiles) | 5 | Radius size |
+| Line of Sight Radius | On | Shapes the radius around walls and obstacles |
+| Snap to True Tile | On | Anchors radius to the server grid, not the animation position |
 
-### Step 2 — Match the RuneLite Version
-
-1. Open RuneLite and look at the **title bar**: `RuneLite 1.x.xx.x`
-2. Open `build.gradle` in this folder
-3. Find this line and update the version number to match yours:
-   ```groovy
-   def runeLiteVersion = '1.10.36.1'   // ← change this
-   ```
-
-> This is the most common cause of build failures for new plugin developers.
-
----
-
-### Step 3 — Open in IntelliJ
-
-1. Open **IntelliJ IDEA**
-2. Click **File → Open** → select this `aggro-tag` folder
-3. When prompted, click **"Trust Project"**
-4. Wait for the Gradle sync to finish (progress bar at the bottom)
-
----
-
-### Step 4 — Build the Plugin
-
-In IntelliJ:
-- Open the **Gradle panel** (right side of the screen, elephant icon)
-- Expand: `aggro-tag → Tasks → build`
-- Double-click **`build`**
-
-Or in a terminal inside the project folder:
-```bash
-# On Mac/Linux
-./gradlew build
-
-# On Windows
-gradlew.bat build
-```
-
-If it says `BUILD SUCCESSFUL` — you're good. The `.jar` file will be in `build/libs/`.
-
----
-
-### Step 5 — Load in RuneLite (Developer Mode)
-
-RuneLite must be started in developer mode to load external/unpacked plugins:
-
-1. Find your RuneLite shortcut → right-click → **Properties**
-2. In the "Target" field, add `--developer-mode` to the end, like:
-   ```
-   "C:\...\RuneLite.exe" --developer-mode
-   ```
-3. Launch RuneLite with that shortcut
-4. Click the **wrench icon** (Configuration) → **Plugin Hub**
-5. Click the **"..." menu** (top right of Plugin Hub) → **"Load unpacked plugin"**
-6. Point it at this `aggro-tag` project folder
-
-> Alternatively, use the **RuneLite Plugin Template** project on GitHub which includes
-> a test runner that launches a local copy of the client automatically.
-
----
-
-### Step 6 — Enable and Configure
-
-1. Open the **Plugin panel** (puzzle piece icon, left side of RuneLite)
-2. Search for **"Aggro Tag"**
-3. Toggle it **on**
-4. Click the **gear icon** next to it to open config
-5. Toggle **"Show Max Hit"** to show yellow max hit numbers next to names
-
----
-
-## Adding More Always-Aggressive NPCs
-
-The list in `AggroTagPlugin.java` covers the most common permanent aggressors.  
-To add more:
-
-1. In-game, hover over or examine the NPC to find its name
-2. Look up its NPC ID on the OSRS Wiki, or enable RuneLite's **"NPC Indicators"**
-   plugin with developer mode to see IDs in-game
-3. Open `AggroTagPlugin.java` and add the ID to `ALWAYS_AGGRESSIVE_IDS`:
-
-```java
-ALWAYS_AGGRESSIVE_IDS.add(12345);   // Example: My New Aggressive NPC
-```
-
-Full reference: https://oldschool.runescape.wiki/w/Aggressive
+### Edge Cases
+| Option | Default | Description |
+|---|---|---|
+| Track 10-Minute Tolerance | On | Hides tags after sustained presence in an area |
+| Slayer Task Integration | On | Tags task-only aggressors only when on-task |
+| Wave Minigame Behaviour | Hide Names, Show Max Hits | Controls tag display inside Inferno, NMZ, Raids, etc. |
+| God Wars Dungeon | On | Suppresses faction tags when wearing appropriate god items |
+| Ape Atoll Monkeys | On | Suppresses tags when a Greegree is equipped |
+| Desert Bandits | On | Shows tags when wearing Saradomin/Zamorak items |
+| Darkmeyer Vyres | On | Suppresses tags when wearing full Vyre noble clothing |
+| Wilderness Revenants | On | Suppresses tags when an Ethereum Bracelet is equipped |
+| Mourner Headquarters | On | Suppresses tags when full Mourner gear is worn |
 
 ---
 
@@ -129,14 +93,37 @@ Full reference: https://oldschool.runescape.wiki/w/Aggressive
 
 ```
 aggro-tag/
-├── build.gradle                        ← build config (update version here)
+├── build.gradle
 ├── settings.gradle
-├── README.md                           ← you are here
-└── src/main/java/com/aggrotag/
-    ├── AggroTagPlugin.java             ← main logic, aggression rules, max hit calc
-    ├── AggroTagConfig.java             ← config toggle (Show Max Hit)
-    └── AggroTagOverlay.java            ← renders the red/yellow text above NPCs
+├── runelite-plugin.properties
+├── README.md
+└── src/main/
+    ├── java/com/aggrotag/
+    │   ├── AggroTagPlugin.java       ← core logic, aggression evaluation, tolerance tracking
+    │   ├── AggroTagConfig.java       ← all config options
+    │   ├── AggroTagOverlay.java      ← rendering: tags, squares, radius, max hit
+    │   ├── GwdFactionItems.java      ← GWD faction item ID sets
+    │   ├── NpcDataLoader.java        ← loads npc_data.json at startup
+    │   └── MinigameBehavior.java     ← minigame behaviour enum
+    └── resources/com/aggrotag/
+        └── npc_data.json             ← Wiki-sourced NPC aggression, max hit, attack style data
 ```
+
+---
+
+## Refreshing NPC Data
+
+`npc_data.json` is built from the OSRS Wiki's Infobox Monster templates. To regenerate it after a game update:
+
+```bash
+# Step 1 — fetch raw wiki data
+bash build_npc_data.sh
+
+# Step 2 — parse into JSON
+javac ParseWikiNpcData.java && java ParseWikiNpcData
+```
+
+Then replace `src/main/resources/com/aggrotag/npc_data.json` with the newly generated file.
 
 ---
 
@@ -144,8 +131,9 @@ aggro-tag/
 
 | Problem | Fix |
 |---|---|
-| `BUILD FAILED: cannot find symbol NpcStats` | Check that `getMeleeStrength()` exists on `NpcStats` in your RuneLite version. Open the class in IntelliJ (Ctrl+click the type) and verify method names. |
-| `BUILD FAILED: package net.runelite does not exist` | RuneLite version mismatch — re-check Step 2. |
-| Plugin doesn't appear in RuneLite | Make sure you launched with `--developer-mode` |
-| Red tags not showing | NPC may not qualify as aggressive (check level or add its ID to `ALWAYS_AGGRESSIVE_IDS`) |
-| Max hit shows nothing | Wiki stats aren't loaded for that NPC yet, or it's a ranged/magic attacker (melee formula only) |
+| Tags not showing for an NPC | NPC may be passive by the 2× rule, or absent from the dataset. Add its ID to Manual Aggressive IDs in config. |
+| Tags showing for a passive NPC | Add its ID to Manual Passive IDs in config. |
+| Max hit shows `[?]` or nothing | That NPC's max hit is not in the dataset. Check the OSRS Wiki and consider regenerating `npc_data.json`. |
+| Radius not showing | Hold the hotkey (default: Alt), or enable Show on Mouse Hover in config. |
+| GWD tags wrong | Verify you have the correct faction item equipped. Boss rooms ignore faction immunity by design. |
+| Tags disappear after 10 minutes | This is correct behaviour — the 10-minute tolerance system is working. Disable it in Edge Cases if you don't want it. |
