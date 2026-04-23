@@ -13,10 +13,7 @@ Optionally shows the NPC's **estimated max hit in yellow** (toggle in plugin con
 | **Always-aggressive** | Hardcoded list: Wilderness bosses, Revenants, Abyssal creatures, Slayer monsters, and more |
 
 ### ⚠️ Known Gaps (would need extra work to add)
-- **God Wars Dungeon** — faction aggression depends on worn items and kill count
-- **Slayer-task aggressors** — only attack while you're assigned their task
 - **Quest-dependent** — some NPCs turn aggressive mid-quest (e.g. certain story moments)
-- **10-minute de-aggro timer** — level-based aggressors stop attacking after ~10 min; this plugin can't track that timer (yet)
 
 ---
 
