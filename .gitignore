@@ -6,3 +6,5 @@ bin/
 *.iml
 *.class
 *.jar
+.DS_Store
+.vscode/
