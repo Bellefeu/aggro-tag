@@ -46,16 +46,6 @@ public interface AggroTagConfig extends Config {
         return 25;
     }
 
-    @ConfigItem(keyName = "showNpcId", name = "Show Tagged NPC ID", description = "Appends the NPC ID to the left of the tagged NPC name (or left of the Square Marker).", position = 7)
-    default boolean showNpcId() {
-        return false;
-    }
-
-    @ConfigItem(keyName = "alwaysShowNpcId", name = "Show Untagged NPC ID", description = "Shows the NPC ID for all untagged NPCs.", position = 8)
-    default boolean alwaysShowNpcId() {
-        return false;
-    }
-
     // ── SECTIONS ───────────────────────────────────────────────────────────────
 
     @ConfigSection(name = "Max Hit", description = "Settings for displaying NPC max hits", position = 10, closedByDefault = true)
@@ -66,6 +56,14 @@ public interface AggroTagConfig extends Config {
 
     @ConfigSection(name = "Aggression Radius", description = "Settings for visualizing the attack range of aggressive NPCs", position = 30, closedByDefault = true)
     String radiusSection = "radiusSection";
+
+    @ConfigSection(
+            name = "NPC ID Display",
+            description = "Options for showing NPC IDs on tags",
+            position = 50,
+            closedByDefault = true
+    )
+    String npcIdSection = "npcIdSection";
 
     @ConfigSection(name = "Edge Cases", description = "Toggle tracking of specific situational aggression rules", position = 40, closedByDefault = true)
     String edgeCasesSection = "edgeCasesSection";
@@ -209,6 +207,27 @@ public interface AggroTagConfig extends Config {
     default boolean radiusTrueTile() {
         return true;
     }
+
+    // ── NPC ID ─────────────────────────────────────────────────────────────
+
+    @ConfigItem(keyName = "showNpcId", name = "Show Tagged NPC ID",
+            description = "Appends the NPC ID to the left of the tagged NPC name.",
+            position = 1, section = npcIdSection)
+    default boolean showNpcId() { return false; }
+
+    @ConfigItem(keyName = "alwaysShowNpcId", name = "Show Untagged NPC ID",
+            description = "Shows the NPC ID for all untagged NPCs.",
+            position = 2, section = npcIdSection)
+    default boolean alwaysShowNpcId() { return false; }
+
+    @ConfigItem(
+            keyName = "npcDataVersion",
+            name = "NPC Data Version",
+            description = "The date npc_data.json was last rebuilt from the OSRS Wiki for aggression and max-hit data.",
+            position = 3,
+            section = npcIdSection
+    )
+    default String npcDataVersion() { return "2026-05-17"; }
 
     // ── EDGE CASES ─────────────────────────────────────────────────────────────
 

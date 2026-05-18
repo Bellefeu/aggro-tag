@@ -103,6 +103,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             6503,  // Callisto
             6504,  // Venenatis
             6611,  // Vet'ion
+            9415,  // Vet'ion (alternative ID)
             11992, // Artio (Callisto re-variant)
             11998, // Spindel (Venenatis re-variant)
             11993, // Calvar'ion (Vet'ion re-variant)
@@ -119,6 +120,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             7938,  // Revenant Dark Beast
             7939,  // Revenant Knight
             7940,  // Revenant Dragon
+            12191, // Revenant Maledictus — spawns randomly in Revenant Caves
 
             // ── The Abyss (Never lose tolerance) ──────────────────────────────────────
             2584,  // Abyssal Leech
@@ -627,15 +629,6 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             11103  // (1) charge
     ));
 
-    private boolean hasAbyssalBraceletEquipped() {
-        ItemContainer equipment = client.getItemContainer(INVENTORY_ID_EQUIPMENT);
-        if (equipment == null)
-            return false;
-
-        Item gloves = equipment.getItem(EquipmentInventorySlot.GLOVES.getSlotIdx());
-        return gloves != null && ABYSSAL_BRACELET_IDS.contains(gloves.getId());
-    }
-
     private boolean hasFullMournerEquipped() {
         ItemContainer equipment = client.getItemContainer(INVENTORY_ID_EQUIPMENT);
         if (equipment == null)
@@ -709,9 +702,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
 
         if (safeName.equals("abyssal leech") || safeName.equals("abyssal guardian")
                 || safeName.equals("abyssal walker")) {
-            if (hasAbyssalBraceletEquipped() && client.getLocalPlayer().getSkullIcon() == -1)
-                return false;
-            return true;
+            return true; // Always aggressive — no item suppresses this
         }
 
         if (isGwdBossOrMinion(safeName)) {
@@ -750,16 +741,46 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         return null;
     }
 
+    private static final Set<String> PASSIVE_EXACT_NAMES = Collections.unmodifiableSet(
+            new HashSet<>(Arrays.asList(
+                    // People
+                    "man", "woman", "child", "villager",
+                    // Farm animals
+                    "cow", "cow calf", "chicken", "rooster", "duck", "duckling",
+                    "sheep", "ram", "pig",
+                    // Bankers & traders
+                    "banker", "bank teller", "grand exchange clerk",
+                    // Monks
+                    "monk", "monk of zamorak",
+                    // Farmers
+                    "farmer",
+                    // Generic guards (non-aggressive variants)
+                    "guard", "city guard", "palace guard",
+                    // Gnomes
+                    "gnome", "gnome child", "gnome trainer",
+                    // Dwarves
+                    "dwarf", "dwarf trader", "dwarf engineer",
+                    // Elves
+                    "elf", "elf guard",
+                    // Thieves guild
+                    "thief"
+            ))
+    );
+
+    private static final Set<String> PASSIVE_IF_LOW_LEVEL = Collections.unmodifiableSet(
+            new HashSet<>(Arrays.asList(
+                    "goblin"
+            ))
+    );
+
     private Boolean evaluateHeuristics(String safeName, int npcLevel) {
-        if (safeName.equals("man") || safeName.equals("woman") || safeName.contains("cow") ||
-                safeName.contains("chicken") || safeName.contains("banker") || safeName.contains("guard") ||
-                safeName.contains("knight") || safeName.contains("duck") || safeName.contains("monk") ||
-                safeName.contains("thief") || safeName.contains("farmer") || safeName.contains("dwarf") ||
-                safeName.contains("gnome") || safeName.contains("elf")) {
+        if (PASSIVE_EXACT_NAMES.contains(safeName)) {
             return false;
         }
-        if (safeName.contains("goblin") && npcLevel < 20) {
-            return false;
+        for (String name : PASSIVE_IF_LOW_LEVEL) {
+            if (safeName.equals(name) && npcLevel < 20) {
+                return false;
+            }
         }
         return null;
     }
