@@ -28,14 +28,12 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 
 import java.util.Collections;
-import java.util.stream.Collectors;
-import net.runelite.client.eventbus.Subscribe;
-import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.util.Text;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.coords.WorldArea;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
+import net.runelite.client.eventbus.Subscribe;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -43,49 +41,40 @@ import java.time.Instant;
  * Aggro Tag Plugin
  *
  * Shows a configurable name tag, square marker, and/or max hit label above any
- * NPC
- * that will attack the player on sight. Features an optional dynamic Line of
- * Sight (LOS)
- * aggression radius and intelligent single-combat dimming to keep the screen
- * clear.
+ * NPC that will attack the player on sight. Features an optional dynamic Line of
+ * Sight (LOS) aggression radius and intelligent single-combat dimming to keep
+ * the screen clear.
  *
  * ── Data Source ──────────────────────────────────────────────────────────────
  * Aggression status, attack styles, and max hits are sourced from
- * npc_data.json, built from
- * the OSRS Wiki's Infobox Monster templates (the authoritative in-game source).
- * Each NPC ID variant has its own record, so level-specific differences (e.g.
- * Dark Wizard lvl 7 vs. lvl 20) are handled correctly.
+ * npc_data.json, built from the OSRS Wiki's Infobox Monster templates (the
+ * authoritative in-game source). Each NPC ID variant has its own record, so
+ * level-specific differences (e.g. Dark Wizard lvl 7 vs. lvl 20) are handled
+ * correctly.
  *
  * ── What IS Handled ──────────────────────────────────────────────────────────
  * 1. Core Mechanics: Standard 2x combat level aggression math, which is
- * correctly
- * bypassed when the player enters the Wilderness.
+ *    correctly bypassed when the player enters the Wilderness.
  * 2. 10-Minute Tolerance: Accurately tracks regional chunk boundaries and plane
- * changes
- * to emulate the invisible OSRS tolerance timers.
+ *    changes to emulate the invisible OSRS tolerance timers.
  * 3. Disguises & Pacifiers: Precise item-check overrides for Ape Atoll
- * (Greegree),
- * Darkmeyer (Vyre Noble), Mourner HQ (Mourner gear), Desert Bandits,
- * Revenants (Ethereum), and the Abyss (Abyssal Bracelet + Skull check).
+ *    (Greegree), Darkmeyer (Vyre Noble), Mourner HQ (Mourner gear), Desert
+ *    Bandits, Revenants (Ethereum), and the Abyss (Abyssal Bracelet + Skull).
  * 4. God Wars Dungeon: Full faction immunity mapping that correctly suspends
- * inside
- * the actual Boss rooms where immunity is ignored by the engine.
+ *    inside the actual Boss rooms where immunity is ignored by the engine.
  * 5. Slayer Integration: Dynamically tags task-only aggressors (e.g., Wyverns,
- * Kurasks)
- * only when you have an active task for them via RuneLite's Slayer service.
+ *    Kurasks) only when you have an active task for them via RuneLite's Slayer
+ *    service.
  * 6. Minigame Clutter: Automatically filters tags in Wave minigames (Inferno,
- * NMZ, Gauntlet)
- * and Raids (CoX, ToB, ToA) to show only vital max-hit data.
+ *    NMZ, Gauntlet) and Raids (CoX, ToB, ToA) to show only vital max-hit data.
  *
  * ── Known Limitations (require runtime game state) ───────────────────────────
- * - Quest-state aggression: Some NPCs become hostile mid-quest and revert
- * after.
- * Would require tracking quest completion state via the Quests API.
- * → Plugin treats these as unknown and falls back to the 2x rule.
- * - Prayer/Protect interactions: Prayers affect damage taken, not
- * whether an NPC initiates combat. This was never an aggression-detection
- * concern.
- * 
+ * - Quest-state aggression: Some NPCs become hostile mid-quest and revert after.
+ *   Would require tracking quest completion state via the Quests API.
+ *   → Plugin treats these as unknown and falls back to the 2x rule.
+ * - Prayer/Protect interactions: Prayers affect damage taken, not whether an NPC
+ *   initiates combat. This was never an aggression-detection concern.
+ *
  * ── Refreshing NPC Data ──────────────────────────────────────────────────────
  * To regenerate npc_data.json after a game update:
  * 1. bash build_npc_data.sh (fetches all wiki monster pages)
@@ -102,56 +91,54 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     /**
      * NPC IDs that are TRUE PERMANENT AGGRESSORS.
      * These NPCs ignore the 2x combat level rule entirely and/or NEVER lose
-     * tolerance.
-     * (e.g., A level 126 player is attacked by a level 7 Revenant Imp).
+     * tolerance. (e.g., A level 126 player is attacked by a level 7 Revenant Imp).
      */
     private static final Set<Integer> ALWAYS_AGGRESSIVE_IDS = new HashSet<>(Arrays.asList(
 
             // ── Wilderness Bosses & Demibosses ─────────────────────────────────────────
-            2054, // Chaos Elemental
-            6619, // Chaos Fanatic
-            6618, // Crazy Archaeologist
-            6615, // Scorpia
-            6503, // Callisto
-            6504, // Venenatis
-            6611, // Vet'ion
+            2054,  // Chaos Elemental
+            6619,  // Chaos Fanatic
+            6618,  // Crazy Archaeologist
+            6615,  // Scorpia
+            6503,  // Callisto
+            6504,  // Venenatis
+            6611,  // Vet'ion
             11992, // Artio (Callisto re-variant)
             11998, // Spindel (Venenatis re-variant)
             11993, // Calvar'ion (Vet'ion re-variant)
 
             // ── Wilderness Revenants (Attack regardless of level) ─────────────────────
-            7881, // Revenant Imp
-            7931, // Revenant Goblin
-            7932, // Revenant Pyrefiend
-            7933, // Revenant Hobgoblin
-            7934, // Revenant Cyclops
-            7935, // Revenant Hellhound
-            7936, // Revenant Demon
-            7937, // Revenant Ork
-            7938, // Revenant Dark Beast
-            7939, // Revenant Knight
-            7940, // Revenant Dragon
+            7881,  // Revenant Imp
+            7931,  // Revenant Goblin
+            7932,  // Revenant Pyrefiend
+            7933,  // Revenant Hobgoblin
+            7934,  // Revenant Cyclops
+            7935,  // Revenant Hellhound
+            7936,  // Revenant Demon
+            7937,  // Revenant Ork
+            7938,  // Revenant Dark Beast
+            7939,  // Revenant Knight
+            7940,  // Revenant Dragon
 
             // ── The Abyss (Never lose tolerance) ──────────────────────────────────────
-            2584, // Abyssal Leech
-            2585, // Abyssal Guardian
-            2586, // Abyssal Walker
+            2584,  // Abyssal Leech
+            2585,  // Abyssal Guardian
+            2586,  // Abyssal Walker
 
             // ── Instanced / True Aggro Bosses ─────────────────────────────────────────
-            2215, // General Graardor
-            3162, // Kree'arra
-            2205, // Commander Zilyana
-            3129, // K'ril Tsutsaroth
-            2042, // Zulrah
-            2266, // Dagannoth Prime
-            2267, // Dagannoth Rex
-            2265, // Dagannoth Supreme
-            8615 // Alchemical Hydra
+            2215,  // General Graardor
+            3162,  // Kree'arra
+            2205,  // Commander Zilyana
+            3129,  // K'ril Tsutsaroth
+            2042,  // Zulrah
+            2266,  // Dagannoth Prime
+            2267,  // Dagannoth Rex
+            2265,  // Dagannoth Supreme
+            8615   // Alchemical Hydra
 
-    // NOTE: Standard Slayer monsters (Dragons, Demons, etc.) are INTENTIONALLY
-    // EXCLUDED here.
-    // They are naturally handled by Rule 2 below and DO lose tolerance after 10
-    // minutes.
+            // NOTE: Standard Slayer monsters (Dragons, Demons, etc.) are INTENTIONALLY
+            // EXCLUDED here. They are naturally handled by Rule 2 below and DO lose
+            // tolerance after 10 minutes.
     ));
 
     /**
@@ -163,8 +150,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             655 // Goblin (Lumbridge/overworld base ID)
     ));
 
-    // ── Edge Case Item Constants
-    // ──────────────────────────────────────────────────
+    // ── Edge Case Item Constants ───────────────────────────────────────────────
     private static final Set<Integer> GREEGREE_IDS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             4024, 4025, 4026, 4027, 4028, 4029, 4030, 4031, 19525)));
 
@@ -183,9 +169,6 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     private static final int VARBIT_MULTICOMBAT_AREA = 4605;
     private static final int INVENTORY_ID_EQUIPMENT = 94;
     private static final int VARBIT_IN_WILDERNESS = 5963;
-
-    private Set<Integer> userAggroIds = Collections.emptySet();
-    private Set<Integer> userNonAggroIds = Collections.emptySet();
 
     @Inject
     private KeyManager keyManager;
@@ -210,9 +193,8 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
 
     private NpcDataLoader npcDataLoader;
 
-    // ── Tolerance Tracking State
-    // ──────────────────────────────────────────────────
-    private static final int SAFE_AREA_RADIUS = 24; // Increased to match OSRS regions better
+    // ── Tolerance Tracking State ───────────────────────────────────────────────
+    private static final int SAFE_AREA_RADIUS = 24;
     private static final int TELEPORT_DISTANCE = SAFE_AREA_RADIUS * 4;
 
     private final WorldPoint[] safeCenters = new WorldPoint[2];
@@ -221,8 +203,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     private boolean loggingIn;
     private int currentPlane = -1;
 
-    // ── Plugin lifecycle
-    // ──────────────────────────────────────────────────────────
+    // ── Plugin lifecycle ───────────────────────────────────────────────────────
 
     private boolean radiusHotkeyHeld;
 
@@ -234,7 +215,6 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     protected void startUp() {
         npcDataLoader = new NpcDataLoader(gson);
         npcDataLoader.load();
-        updateUserLists();
         overlayManager.add(overlay);
         keyManager.registerKeyListener(this);
         log.debug("Aggro Tag plugin started");
@@ -284,36 +264,17 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         return client;
     }
 
-    // ── Public API used by the overlay ───────────────────────────────────────────
+    // ── Public API used by the overlay ────────────────────────────────────────
 
     /**
      * Returns true if this NPC will attack the local player on sight.
      *
-     * <p>
      * Priority order:
-     * <ol>
-     * <li>User overrides (manual config lists) — absolute veto in both
-     * directions.</li>
-     * <li>Hard-coded never-aggressive IDs (e.g. Lumbridge Goblins).</li>
-     * <li>Wiki aggression data (authoritative, per NPC ID variant):
-     * <ul>
-     * <li>wiki says No → never aggressive, full stop.</li>
-     * <li>wiki says Yes AND NPC is in {@link #ALWAYS_AGGRESSIVE_IDS} → always
-     * aggressive (Revenants, bosses — exempt from 2x rule).</li>
-     * <li>wiki says Yes AND standard overworld mob → apply the 2x combat level
-     * rule. If playerLevel &gt; 2x npcLevel the mob has lost interest.</li>
-     * </ul>
-     * </li>
-     * <li>Name-based heuristics (fallback when wiki has no data).</li>
-     * <li>2x combat level rule (fallback when wiki absent).</li>
-     * <li>Hard-coded always-aggressive list (final fallback for wiki gaps).</li>
-     * </ol>
-     *
-     * <p>
-     * <b>Design note:</b> The OSRS Wiki's {@code |aggressive = Yes} means "this
-     * species uses the standard aggression system," which still includes the 2x
-     * combat level check for overworld mobs. Only permanent aggressors listed in
-     * {@link #ALWAYS_AGGRESSIVE_IDS} are truly exempt from that check.
+     * 1. Hard-coded never-aggressive IDs (e.g. Lumbridge Goblins).
+     * 2. Wiki aggression data (authoritative, per NPC ID variant).
+     * 3. Name-based heuristics (fallback when wiki has no data).
+     * 4. 2x combat level rule (fallback when wiki absent).
+     * 5. Hard-coded always-aggressive list (final fallback for wiki gaps).
      */
     public boolean isAggressive(NPC npc) {
         if (npc == null || client.getLocalPlayer() == null)
@@ -332,11 +293,9 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         String safeName = name != null ? Text.removeTags(name).toLowerCase() : "";
         boolean inWilderness = client.getVarbitValue(VARBIT_IN_WILDERNESS) == 1;
 
-        // Rule 0 & 1A — User Overrides & Hard-coded Passive
-        if (userNonAggroIds.contains(id) || NEVER_AGGRESSIVE_IDS.contains(id))
+        // Rule 0 — Hard-coded Passive
+        if (NEVER_AGGRESSIVE_IDS.contains(id))
             return false;
-        if (userAggroIds.contains(id))
-            return true;
 
         // Rule 1.5 & 1.6 — Item Disguises, Task Overrides, and GWD Bosses
         Boolean disguiseOverride = evaluateOverridesAndDisguises(npc, safeName);
@@ -365,8 +324,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     }
 
     /**
-     * Returns the NPC's max hit from the bundled {@code npc_data.json}, or -1 if
-     * unknown.
+     * Returns the NPC's max hit from the bundled npc_data.json, or -1 if unknown.
      */
     public int getMaxHit(NPC npc) {
         if (npc == null || !config.showMaxHit()) {
@@ -376,15 +334,8 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     }
 
     /**
-     * Returns the NPC's attack style bitmask from the bundled
-     * {@code npc_data.json}.
-     * The overlay uses this to choose per-style colors when the config option is
-     * on.
-     *
-     * <p>
-     * Bitmask: {@code 1}=melee, {@code 2}=ranged, {@code 4}=magic (additive).
-     * Returns {@code 0} if the style is not in the dataset.
-     * </p>
+     * Returns the NPC's attack style bitmask from the bundled npc_data.json.
+     * Bitmask: 1=melee, 2=ranged, 4=magic (additive). Returns 0 if unknown.
      */
     public int getAttackStyleBitmask(NPC npc) {
         if (npc == null)
@@ -393,41 +344,25 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     }
 
     /**
-     * Returns true when this NPC's tag should be dimmed.
-     *
-     * <p>
-     * Conditions that must ALL be true:
-     * <ol>
-     * <li>The config toggle is enabled.</li>
-     * <li>The player is in a single-combat zone
-     * ({@code MULTICOMBAT_AREA} varbit == 0).</li>
-     * <li>The player is currently engaged with another NPC, meaning the
-     * single-combat slot is occupied and this NPC cannot attack.</li>
-     * <li>This NPC is NOT the one the player is actively fighting
-     * (that one stays fully bright).</li>
-     * </ol>
+     * Returns true when this NPC's tag should be dimmed in single combat.
      */
     public boolean isDimmedByMultiCombat(NPC npc) {
         if (!config.dimInSingleCombat())
             return false;
 
-        // Multi-combat: every aggressive NPC remains a live threat
         if (client.getVarbitValue(VARBIT_MULTICOMBAT_AREA) == 1)
             return false;
 
-        // Player not in combat: all nearby aggressors are a threat
         Actor playerTarget = client.getLocalPlayer() != null
                 ? client.getLocalPlayer().getInteracting()
                 : null;
         if (playerTarget == null)
             return false;
 
-        // The NPC the player is fighting stays at full brightness
         return npc != playerTarget;
     }
 
-    // ── Tolerance tracking
-    // ────────────────────────────────────────────────────────
+    // ── Tolerance tracking ────────────────────────────────────────────────────
 
     @Subscribe
     public void onGameStateChanged(GameStateChanged event) {
@@ -477,7 +412,6 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
 
         boolean planeChanged = newLocation.getPlane() != currentPlane;
 
-        // If player teleports or uses stairs/ladders, reset everything completely
         if (planeChanged
                 || (lastPlayerLocation != null && newLocation.distanceTo2D(lastPlayerLocation) > TELEPORT_DISTANCE)) {
             safeCenters[0] = null;
@@ -485,25 +419,16 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             toleranceStartTime = Instant.now();
             currentPlane = newLocation.getPlane();
         } else if (safeCenters[1] == null) {
-            // First tick initialization
             safeCenters[1] = newLocation;
             toleranceStartTime = Instant.now();
             currentPlane = newLocation.getPlane();
         }
 
-        // Logic for overlapping chunk bounds
-        // First check if we stepped out of the primary center
         if (safeCenters[1].distanceTo2D(newLocation) > SAFE_AREA_RADIUS) {
-
-            // If the secondary center is null, we are just establishing our overlap area.
-            // DO NOT reset the timer here!
             if (safeCenters[0] == null) {
                 safeCenters[0] = safeCenters[1];
                 safeCenters[1] = newLocation;
-            }
-            // If it's NOT null, check if we also stepped out of the secondary center
-            else if (safeCenters[0].distanceTo2D(newLocation) > SAFE_AREA_RADIUS) {
-                // The player has left BOTH overlapping safe zones. Reset the timer.
+            } else if (safeCenters[0].distanceTo2D(newLocation) > SAFE_AREA_RADIUS) {
                 safeCenters[0] = safeCenters[1];
                 safeCenters[1] = newLocation;
                 toleranceStartTime = Instant.now();
@@ -520,14 +445,8 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         return Duration.between(toleranceStartTime, Instant.now()).toMinutes() >= 10;
     }
 
-    // ── Private helpers
-    // ───────────────────────────────────────────────────────────
+    // ── Private helpers ───────────────────────────────────────────────────────
 
-    /**
-     * Returns true if the player currently has any item from the specified GWD
-     * faction equipped. A single matching item is sufficient to suppress that
-     * faction's aggression (OSRS game rule).
-     */
     private boolean playerHasFactionItem(String faction) {
         Set<Integer> factionItems = GwdFactionItems.forFaction(faction);
         if (factionItems.isEmpty())
@@ -545,10 +464,6 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         return false;
     }
 
-    /**
-     * Returns true if the NPC's right-click menu contains "Attack",
-     * meaning it is a combat NPC capable of fighting the player.
-     */
     private boolean npcCanAttack(NPC npc) {
         NPCComposition comp = npc.getTransformedComposition();
         if (comp == null) {
@@ -571,34 +486,8 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         return false;
     }
 
-    @Subscribe
-    public void onConfigChanged(ConfigChanged event) {
-        if (event.getGroup().equals("aggrotag")) {
-            updateUserLists();
-        }
-    }
-
-    private void updateUserLists() {
-        userAggroIds = parseIdList(config.manualAggro());
-        userNonAggroIds = parseIdList(config.manualNonAggro());
-    }
-
-    private Set<Integer> parseIdList(String input) {
-        if (input == null || input.isEmpty())
-            return Collections.emptySet();
-        return Text.fromCSV(input).stream()
-                .map(s -> {
-                    try {
-                        return Integer.parseInt(s.trim());
-                    } catch (NumberFormatException e) {
-                        return null;
-                    }
-                })
-                .filter(i -> i != null)
-                .collect(Collectors.toSet());
-    }
-
     // ── DEBOUNCED LOS CACHING (Anti-Jitter) ──────────────────────────────────
+
     public static class LosCache {
         public int[] packedOffsets = new int[0];
         public int count = 0;
@@ -640,8 +529,6 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             dl.changedTime = System.currentTimeMillis();
         }
 
-        // 100ms delay to verify server tick and completely prevent client prediction
-        // flapping!
         if (!dl.stableWp.equals(dl.pendingWp)) {
             if (System.currentTimeMillis() - dl.changedTime > 100) {
                 dl.stableWp = dl.pendingWp;
@@ -655,7 +542,6 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         int currentTick = client.getTickCount();
         LosCache cache = losCacheMap.computeIfAbsent(npc, n -> new LosCache());
 
-        // Use the debounced location to determine if we need to recalculate
         if (cache.tickEvaluated == currentTick && npcLocation.equals(cache.evaluatedLocation)) {
             return cache;
         }
@@ -738,7 +624,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             11097, // (4) charges
             11099, // (3) charges
             11101, // (2) charges
-            11103 // (1) charge
+            11103  // (1) charge
     ));
 
     private boolean hasAbyssalBraceletEquipped() {
@@ -766,13 +652,12 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             return false;
         }
 
-        // 1506 = Gas mask, 6070 = Cloak, 6065 = Top, 6067 = Trousers, 6068 = Gloves,
-        // 6069 = Boots
+        // 1506 = Gas mask, 6070 = Cloak, 6065 = Top, 6067 = Trousers, 6068 = Gloves, 6069 = Boots
         return head.getId() == 1506 && cape.getId() == 6070 && chest.getId() == 6065 &&
                 legs.getId() == 6067 && gloves.getId() == 6068 && boots.getId() == 6069;
     }
 
-    // ── Aggression Evaluation Helpers ──────────────────────────────────────────
+    // ── Aggression Evaluation Helpers ─────────────────────────────────────────
 
     private Boolean evaluateOverridesAndDisguises(NPC npc, String safeName) {
         if (isTaskOnlyAggressor(safeName)) {
@@ -891,56 +776,4 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
                 safeName.equals("nex") || safeName.equals("fumus") || safeName.equals("umbra")
                 || safeName.equals("cruor") || safeName.equals("glacies");
     }
-
-    // The notes in this AggroTagPlugin.java file refer to two developer scripts
-    // used to scrape the OSRS Wiki and generate that npc_data.json file.
-    /*
-     * To run them, you will need to use a command-line terminal. Since you are
-     * developing a RuneLite plugin, the easiest way to do this is right inside your
-     * IDE (like IntelliJ IDEA).
-     * 
-     * Here is exactly how to run them:
-     * 
-     * Step 1: Open your Terminal
-     * In IntelliJ IDEA: Look at the bottom of your screen and click the Terminal
-     * tab (or press Alt + F12 on Windows / Option + F12 on Mac).
-     * 
-     * Note for Windows Users: Because the first script is a .sh (Bash) script,
-     * standard Windows Command Prompt won't understand it. You will need to use Git
-     * Bash or WSL (Windows Subsystem for Linux) in your terminal. If you are on a
-     * Mac or Linux, your default terminal will work perfectly.
-     * 
-     * Step 2: Navigate to the Scripts
-     * In the terminal, use the cd command to navigate to the exact folder where you
-     * saved build_npc_data.sh and ParseWikiNpcData.java.
-     * (E.g., cd src/main/scripts/ or wherever you keep your data-fetching tools).
-     * 
-     * Step 3: Fetch the Wiki Data
-     * Run the bash script by typing this and hitting Enter:
-     * 
-     * Bash
-     * bash build_npc_data.sh
-     * 
-     * What this does: This script connects to the OSRS Wiki API and downloads the
-     * raw "Infobox Monster" text data for every monster in the game.
-     * 
-     * Step 4: Parse the Data into JSON
-     * Once the download finishes, run the Java parser by typing this command
-     * (adjusting the folder paths if your ParseWikiNpcData.java isn't literally
-     * stored in your computer's /tmp/ folder):
-     * 
-     * Bash
-     * javac ParseWikiNpcData.java && java ParseWikiNpcData
-     * What this does:
-     * 1. javac compiles your parser into a .class file.
-     * 2. java executes it.
-     * 
-     * It will read all the raw text files you just downloaded, extract the combat
-     * levels, max hits, and attack styles, and compile them into a perfectly
-     * formatted npc_data.json file.
-     * 
-     * Once that finishes, you just drag and drop the newly generated npc_data.json
-     * into your plugin's src/main/resources/com/aggrotag/ folder, replacing the old
-     * one, and your plugin will instantly have all the latest OSRS game data!
-     */
 }

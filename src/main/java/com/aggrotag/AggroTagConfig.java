@@ -56,16 +56,6 @@ public interface AggroTagConfig extends Config {
         return false;
     }
 
-    @ConfigItem(keyName = "manualAggro", name = "Manual Aggressive IDs", description = "Comma-separated list of NPC IDs to ALWAYS highlight red.", position = 9)
-    default String manualAggro() {
-        return "";
-    }
-
-    @ConfigItem(keyName = "manualNonAggro", name = "Manual Passive IDs", description = "Comma-separated list of NPC IDs to NEVER highlight.", position = 10)
-    default String manualNonAggro() {
-        return "";
-    }
-
     // ── SECTIONS ───────────────────────────────────────────────────────────────
 
     @ConfigSection(name = "Max Hit", description = "Settings for displaying NPC max hits", position = 10, closedByDefault = true)
