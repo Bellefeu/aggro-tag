@@ -59,7 +59,7 @@ import java.time.Instant;
  *    changes to emulate the invisible OSRS tolerance timers.
  * 3. Disguises & Pacifiers: Precise item-check overrides for Ape Atoll
  *    (Greegree), Darkmeyer (Vyre Noble), Mourner HQ (Mourner gear), Desert
- *    Bandits, Revenants (Ethereum), and the Abyss (Abyssal Bracelet + Skull).
+ *    Bandits, Revenants (Ethereum).
  * 4. God Wars Dungeon: Full faction immunity mapping that correctly suspends
  *    inside the actual Boss rooms where immunity is ignored by the engine.
  * 5. Slayer Integration: Dynamically tags task-only aggressors (e.g., Wyverns,
@@ -101,12 +101,16 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             6618,  // Crazy Archaeologist
             6615,  // Scorpia
             6503,  // Callisto
+            6509,  // Callisto
             6504,  // Venenatis
             6611,  // Vet'ion
-            9415,  // Vet'ion (alternative ID)
+            6612,  // Vet'ion (Enrage)
+            12002, // Vet'ion (Alternative ID)
             11992, // Artio (Callisto re-variant)
             11998, // Spindel (Venenatis re-variant)
             11993, // Calvar'ion (Vet'ion re-variant)
+            11994, // Calvar'ion (Vet'ion re-variant)
+            11995, // Calvar'ion (Vet'ion re-variant)
 
             // ── Wilderness Revenants (Attack regardless of level) ─────────────────────
             7881,  // Revenant Imp
@@ -120,7 +124,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             7938,  // Revenant Dark Beast
             7939,  // Revenant Knight
             7940,  // Revenant Dragon
-            12191, // Revenant Maledictus — spawns randomly in Revenant Caves
+            11246, // Revenant Maledictus — spawns randomly in Revenant Caves
 
             // ── The Abyss (Never lose tolerance) ──────────────────────────────────────
             2584,  // Abyssal Leech
@@ -621,13 +625,6 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         return gloves != null && gloves.getId() == BRACELET_OF_ETHEREUM;
     }
 
-    private static final Set<Integer> ABYSSAL_BRACELET_IDS = new HashSet<>(Arrays.asList(
-            11095, // (5) charges
-            11097, // (4) charges
-            11099, // (3) charges
-            11101, // (2) charges
-            11103  // (1) charge
-    ));
 
     private boolean hasFullMournerEquipped() {
         ItemContainer equipment = client.getItemContainer(INVENTORY_ID_EQUIPMENT);
