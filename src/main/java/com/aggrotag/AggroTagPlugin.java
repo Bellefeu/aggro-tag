@@ -333,7 +333,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
      * Returns the NPC's max hit from the bundled npc_data.json, or -1 if unknown.
      */
     public int getMaxHit(NPC npc) {
-        if (npc == null || !config.showMaxHit()) {
+        if (npc == null) {
             return -1;
         }
         return npcDataLoader.getMaxHit(npc.getId());

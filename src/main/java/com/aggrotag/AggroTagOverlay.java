@@ -406,7 +406,10 @@ public class AggroTagOverlay extends Overlay {
         }
 
         // ── Max hit (skip entirely if disabled or data unavailable) ────────────────
-        if (!plugin.getConfig().showMaxHit()) {
+        boolean showMaxHitForState = isTargetingPlayer
+                ? plugin.getConfig().showTargetingMaxHit()
+                : plugin.getConfig().showAggroMaxHit();
+        if (!showMaxHitForState) {
             graphics.setComposite(savedComposite);
             return;
         }
