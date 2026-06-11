@@ -23,12 +23,12 @@ public interface AggroTagConfig extends Config {
         return new Color(255, 140, 0, 255);
     }
 
-    @ConfigItem(keyName = "hideAggro", name = "Hide Aggro", description = "When enabled, hides the aggro name tag (or square marker) for NPCs that are aggressive but not currently targeting you. Max hit and other overlays are unaffected.", position = 3)
+    @ConfigItem(keyName = "hideAggro", name = "Hide Aggro Tag", description = "When enabled, hides the aggro name tag (or square marker) for NPCs that are aggressive but not currently targeting you. Max hit and other overlays are unaffected.", position = 3)
     default boolean hideAggro() {
         return false;
     }
 
-    @ConfigItem(keyName = "hideTargeting", name = "Hide Targeting", description = "When enabled, hides the targeting-you name tag (or square marker) for NPCs that are actively targeting/chasing you. Max hit and other overlays are unaffected.", position = 4)
+    @ConfigItem(keyName = "hideTargeting", name = "Hide Targeting-You Tag", description = "When enabled, hides the targeting-you name tag (or square marker) for NPCs that are actively targeting/chasing you. Max hit and other overlays are unaffected.", position = 4)
     default boolean hideTargeting() {
         return false;
     }
@@ -45,13 +45,19 @@ public interface AggroTagConfig extends Config {
         return 0;
     }
 
-    @ConfigItem(keyName = "dimInSingleCombat", name = "Dim Others in Single Combat", description = "<html>In single-combat zones, when you are already fighting an NPC,<br>all other aggressive NPC tags are dimmed — they cannot attack you<br>while your combat slot is occupied. Tags return to full brightness<br>the moment your target dies. Has no effect in multi-combat areas.</html>", position = 7)
+    @Range(min = -500, max = 500)
+    @ConfigItem(keyName = "tagHorizontalOffset", name = "Horizontal Position Shift", description = "Shift the entire tag layout left (negative) or right (positive) on your screen.", position = 7)
+    default int tagHorizontalOffset() {
+        return 0;
+    }
+
+    @ConfigItem(keyName = "dimInSingleCombat", name = "Dim Others in Single Combat", description = "<html>In single-combat zones, when you are already fighting an NPC,<br>all other aggressive NPC tags are dimmed — they cannot attack you<br>while your combat slot is occupied. Tags return to full brightness<br>the moment your target dies. Has no effect in multi-combat areas.</html>", position = 8)
     default boolean dimInSingleCombat() {
         return true;
     }
 
     @Range(min = 0, max = 100)
-    @ConfigItem(keyName = "dimmedOpacity", name = "Dimmed Tag Opacity %", description = "How transparent dimmed (non-threatening) NPC tags appear. 0 = fully invisible, 100 = full brightness. Default 25.", position = 8)
+    @ConfigItem(keyName = "dimmedOpacity", name = "Dim In-Combat Tags %", description = "How transparent dimmed (when engaged in single combat) NPC tags appear. 0 = fully invisible, 100 = full brightness. Default 25.", position = 9)
     default int dimmedOpacity() {
         return 25;
     }
@@ -67,12 +73,7 @@ public interface AggroTagConfig extends Config {
     @ConfigSection(name = "Aggression Radius", description = "Settings for visualizing the attack range of aggressive NPCs", position = 30, closedByDefault = true)
     String radiusSection = "radiusSection";
 
-    @ConfigSection(
-            name = "NPC ID Display",
-            description = "Options for showing NPC IDs on tags",
-            position = 50,
-            closedByDefault = true
-    )
+    @ConfigSection(name = "NPC ID Display", description = "Options for showing NPC IDs on tags", position = 50, closedByDefault = true)
     String npcIdSection = "npcIdSection";
 
     @ConfigSection(name = "Edge Cases", description = "Toggle tracking of specific situational aggression rules", position = 40, closedByDefault = true)
@@ -85,64 +86,74 @@ public interface AggroTagConfig extends Config {
         return true;
     }
 
-    @ConfigItem(keyName = "showTargetingMaxHit", name = "Show Targeting Max Hit", description = "Displays the NPC's max hit for NPCs that are actively targeting/chasing you.", position = 2, section = maxHitSection)
+    @ConfigItem(keyName = "showTargetingMaxHit", name = "Show Targeting-You Max Hit", description = "Displays the NPC's max hit for NPCs that are actively targeting/chasing you.", position = 2, section = maxHitSection)
     default boolean showTargetingMaxHit() {
         return true;
     }
 
     @ConfigItem(keyName = "colorByAttackStyle", name = "Color Max Hit by Attack Style", description = "<html>When enabled, shows a separate colored number per attack style:<br>&nbsp;&nbsp;<b><font color='#ffe550ff'>Yellow</font></b> = Melee &nbsp;<b><font color='#3CFF64'>Green</font></b> = Ranged &nbsp;<b><font color='#6496FF'>Blue</font></b> = Magic<br>Falls back to yellow if the attack style is unknown.</html>", position = 3, section = maxHitSection)
     default boolean colorByAttackStyle() {
-        return false;
+        return true;
     }
 
-    @ConfigItem(keyName = "showHpPercent", name = "Show Max Hit as % of HP", description = "Appends the max hit as a percentage of your current Hitpoints, e.g. [15 \u00b7 25%]. Values over 100% mean the NPC can theoretically one-shot you.", position = 4, section = maxHitSection)
+    @ConfigItem(keyName = "maxHitBaseColor", name = "Max Hit Base Color", description = "The default color of the max hit number when 'Color Max Hit by Attack Style' is disabled.", position = 4, section = maxHitSection)
+    default Color maxHitBaseColor() {
+        return Color.WHITE;
+    }
+
+    @ConfigItem(keyName = "showHpPercent", name = "Show Max Hit as % of HP", description = "Appends the max hit as a percentage of your current Hitpoints, e.g. [15 \u00b7 25%]. Values over 100% mean the NPC can theoretically one-shot you.", position = 5, section = maxHitSection)
     default boolean showHpPercent() {
         return false;
     }
 
     @Range(min = 0, max = 5)
-    @ConfigItem(keyName = "hpPercentSizeIncrease", name = "Base HP % Size Increase", description = "Increase the font size of the % number.", position = 5, section = maxHitSection)
+    @ConfigItem(keyName = "hpPercentSizeIncrease", name = "Base HP % Size Increase", description = "Increase the font size of the % number.", position = 6, section = maxHitSection)
     default int hpPercentSizeIncrease() {
         return 0;
     }
 
-    @ConfigItem(keyName = "colorHpPercent", name = "Custom HP % Colors", description = "Color the % text based on danger level.", position = 6, section = maxHitSection)
+    @ConfigItem(keyName = "colorHpNumber", name = "Custom HP # Colors", description = "<html>When enabled, overrides the 'Color Max Hit by Attack Style' coloring<br>and instead colors the max hit number using your threshold colors below.<br>Requires thresholds to be configured.</html>", position = 7, section = maxHitSection)
+    default boolean colorHpNumber() {
+        return true;
+    }
+
+    @ConfigItem(keyName = "colorHpPercent", name = "Custom HP % Colors", description = "Color the % text based on danger level.", position = 8, section = maxHitSection)
     default boolean colorHpPercent() {
-        return false;
+        return true;
     }
 
     @Range(min = 0, max = 100)
-    @ConfigItem(keyName = "hpPercentThreshold1", name = "HP % Threshold 1", description = "First threshold for HP percentage coloring (e.g. 50).", position = 7, section = maxHitSection)
+    @ConfigItem(keyName = "hpPercentThreshold1", name = "HP % Threshold 1", description = "First threshold for HP percentage coloring (e.g. 50).", position = 9, section = maxHitSection)
     default int hpPercentThreshold1() {
         return 50;
     }
 
     @Range(min = 0, max = 100)
-    @ConfigItem(keyName = "hpPercentThreshold2", name = "HP % Threshold 2", description = "Second threshold for HP percentage coloring (e.g. 100).", position = 8, section = maxHitSection)
+    @ConfigItem(keyName = "hpPercentThreshold2", name = "HP % Threshold 2", description = "Second threshold for HP percentage coloring (e.g. 100).", position = 10, section = maxHitSection)
     default int hpPercentThreshold2() {
         return 100;
     }
 
-    @ConfigItem(keyName = "colorHpPercent50", name = "Threshold 1 Color", description = "Color when the max hit is > Threshold 1 of your current HP.", position = 9, section = maxHitSection)
+    @ConfigItem(keyName = "colorHpPercent50", name = "Threshold 1 Color", description = "Color when the max hit is > Threshold 1 of your current HP.", position = 11, section = maxHitSection)
     default Color colorHpPercent50() {
         return new Color(39, 232, 163);
     }
 
-    @ConfigItem(keyName = "colorHpPercent100", name = "Threshold 2 Color", description = "Color when the max hit is > Threshold 2 of your current HP.", position = 10, section = maxHitSection)
+    @ConfigItem(keyName = "colorHpPercent100", name = "Threshold 2 Color", description = "Color when the max hit is > Threshold 2 of your current HP.", position = 12, section = maxHitSection)
     default Color colorHpPercent100() {
         return new Color(240, 25, 195);
     }
 
-    @Range(min = 0, max = 5)
-    @ConfigItem(keyName = "hpPercentSizeIncrease50", name = "Threshold 1 Size Increase", description = "Additional font size increase when max hit is > Threshold 1.", position = 11, section = maxHitSection)
+    @Range(min = 0, max = 10)
+    @ConfigItem(keyName = "hpPercentSizeIncrease50", name = "Threshold 1 Size Increase", description = "Additional font size increase when max hit is > Threshold 1.", position = 13, section = maxHitSection)
     default int hpPercentSizeIncrease50() {
-        return 0;
+        return 4;
     }
 
-    @Range(min = 0, max = 5)
-    @ConfigItem(keyName = "hpPercentSizeIncrease100", name = "Threshold 2 Size Increase", description = "Additional font size increase when max hit is > Threshold 2.", position = 12, section = maxHitSection)
+    @Range(min = 0, max = 10)
+    @ConfigItem(keyName = "hpPercentSizeIncrease100", name = "Threshold 2 Size Increase", description = "Additional font size increase when max hit is > Threshold 2.", position = 14, section = maxHitSection)
     default int hpPercentSizeIncrease100() {
-        return 0;
+        return 9;
     }
 
     // ── SQUARE MARKER ──────────────────────────────────────────────────────────
@@ -183,12 +194,12 @@ public interface AggroTagConfig extends Config {
 
     @ConfigItem(keyName = "radiusHotkey", name = "Show All Hotkey", description = "Press and hold this key to show the aggression radius of all aggressive NPCs.", position = 1, section = radiusSection)
     default Keybind radiusHotkey() {
-        return Keybind.ALT;
+        return Keybind.CTRL;
     }
 
     @ConfigItem(keyName = "radiusToggle", name = "Toggle (Instead of Hold)", description = "When enabled, pressing the hotkey toggles the radius on and off rather than requiring you to hold it.", position = 2, section = radiusSection)
     default boolean radiusToggle() {
-        return false;
+        return true;
     }
 
     @ConfigItem(keyName = "hoverRadius", name = "Show on Mouse Hover", description = "Show the aggression radius when you hover your mouse over an aggressive NPC.", position = 3, section = radiusSection)
@@ -196,53 +207,65 @@ public interface AggroTagConfig extends Config {
         return false;
     }
 
+    @ConfigItem(keyName = "autoRadius", name = "Check For NPC Radius Automatically", description = "<html>When enabled, the plugin uses hard-coded NPC aggression ranges<br>sourced from the OSRS Wiki (e.g. Kurask 2-tile, DKs 7-tile, etc.).<br>NPCs without a hard-coded range default to 5 tiles.<br><br>When disabled, every NPC uses the manual Aggression Radius slider below.</html>", position = 4, section = radiusSection)
+    default boolean autoRadius() {
+        return true;
+    }
+
     @Range(min = 1, max = 15)
-    @ConfigItem(keyName = "defaultRadius", name = "Aggression Radius (Tiles)", description = "The size of the radius. Default for OSRS is typically 5 tiles.", position = 4, section = radiusSection)
+    @ConfigItem(keyName = "defaultRadius", name = "Override Radius (Tiles)", description = "The size of the radius. Only used when 'Check For NPC Radius Automatically' is disabled.", position = 5, section = radiusSection)
     default int defaultRadius() {
         return 5;
     }
 
-    @ConfigItem(keyName = "radiusColor", name = "Radius Color", description = "The color of the aggression radius overlay.", position = 5, section = radiusSection)
+    @ConfigItem(keyName = "radiusColor", name = "Radius Color", description = "The color of the aggression radius overlay.", position = 6, section = radiusSection)
     default Color radiusColor() {
-        return new Color(255, 60, 60);
+        return new Color(124, 12, 12);
     }
 
     @Range(min = 0, max = 100)
-    @ConfigItem(keyName = "radiusOpacity", name = "Radius Opacity", description = "Adjust the opacity of the aggression radius (0 is fully transparent, 100 is fully opaque).", position = 6, section = radiusSection)
+    @ConfigItem(keyName = "radiusOpacity", name = "Radius Opacity", description = "Adjust the opacity of the aggression radius (0 is fully transparent, 100 is fully opaque).", position = 7, section = radiusSection)
     default int radiusOpacity() {
-        return 12;
+        return 8;
     }
 
-    @ConfigItem(keyName = "radiusLineOfSight", name = "Line of Sight (LOS) Radius", description = "Dynamically shapes the radius to only show tiles the NPC can actually see, blocking it behind walls/objects.<br><br>Warning: Checking LOS tile-by-tile can impact FPS if many NPCs are on screen.", position = 7, section = radiusSection)
+    @ConfigItem(keyName = "dimRadiusInCombat", name = "Dim Radius While in Combat", description = "<html>When enabled, the aggression radius fades to near-invisible<br>while you are actively in combat, then returns to full opacity<br>when combat ends. Reduces visual clutter during fights.</html>", position = 8, section = radiusSection)
+    default boolean dimRadiusInCombat() {
+        return true;
+    }
+
+    @Range(min = 0, max = 100)
+    @ConfigItem(keyName = "dimmedRadiusOpacity", name = "Dimmed Radius Opacity %", description = "The opacity the aggression radius fades to while in combat (0 = invisible, 100 = full). Only used when 'Dim Radius While in Combat' is enabled.", position = 9, section = radiusSection)
+    default int dimmedRadiusOpacity() {
+        return 4;
+    }
+
+    @ConfigItem(keyName = "radiusLineOfSight", name = "Line of Sight (LOS) Radius", description = "Dynamically shapes the radius to only show tiles the NPC can actually see, blocking it behind walls/objects.<br><br>Warning: Checking LOS tile-by-tile can impact FPS if many NPCs are on screen.", position = 10, section = radiusSection)
     default boolean radiusLineOfSight() {
         return true;
     }
 
-    @ConfigItem(keyName = "radiusTrueTile", name = "Snap to True Tile", description = "Snaps the aggression radius to the server's strict grid (True Tile) rather than gliding smoothly with the NPC's animation. Crucial for high-level PvM positioning.", position = 8, section = radiusSection)
+    @ConfigItem(keyName = "radiusTrueTile", name = "Snap to True Tile", description = "Snaps the aggression radius to the server's strict grid (True Tile) rather than gliding smoothly with the NPC's animation. Crucial for high-level PvM positioning.", position = 11, section = radiusSection)
     default boolean radiusTrueTile() {
         return true;
     }
 
     // ── NPC ID ─────────────────────────────────────────────────────────────
 
-    @ConfigItem(keyName = "showNpcId", name = "Show Tagged NPC ID",
-            description = "Appends the NPC ID to the left of the tagged NPC name.",
-            position = 1, section = npcIdSection)
-    default boolean showNpcId() { return false; }
+    @ConfigItem(keyName = "showNpcId", name = "Show Tagged NPC ID", description = "Appends the NPC ID to the left of the tagged NPC name.", position = 1, section = npcIdSection)
+    default boolean showNpcId() {
+        return false;
+    }
 
-    @ConfigItem(keyName = "alwaysShowNpcId", name = "Show Untagged NPC ID",
-            description = "Shows the NPC ID for all untagged NPCs.",
-            position = 2, section = npcIdSection)
-    default boolean alwaysShowNpcId() { return false; }
+    @ConfigItem(keyName = "alwaysShowNpcId", name = "Show Untagged NPC ID", description = "Shows the NPC ID for all untagged NPCs.", position = 2, section = npcIdSection)
+    default boolean alwaysShowNpcId() {
+        return false;
+    }
 
-    @ConfigItem(
-            keyName = "npcDataVersion",
-            name = "NPC Data Version",
-            description = "The date npc_data.json was last rebuilt from the OSRS Wiki for aggression and max-hit data.",
-            position = 3,
-            section = npcIdSection
-    )
-    default String npcDataVersion() { return "2026-05-17"; }
+    @ConfigItem(keyName = "npcDataVersion", name = "NPC Data Version", description = "The date npc_data.json was last rebuilt from the OSRS Wiki for aggression and max-hit data.", position = 3, section = npcIdSection)
+    default String npcDataVersion() {
+        return "2026-05-17";
+    }
 
     // ── EDGE CASES ─────────────────────────────────────────────────────────────
 
@@ -256,7 +279,7 @@ public interface AggroTagConfig extends Config {
         return true;
     }
 
-    @ConfigItem(keyName = "minigameBehavior", name = "Wave Minigame Behavior", description = "<html>Controls the plugin inside wave-based minigames and raids where every NPC is aggressive:<br>&nbsp;&nbsp;<b>Fight Caves</b>, <b>Inferno</b>, <b>Colosseum</b>, <b>NMZ</b><br>&nbsp;&nbsp;<b>The Gauntlet & Corrupted Gauntlet</b><br>&nbsp;&nbsp;<b>Chambers of Xeric</b>, <b>Theatre of Blood</b>, <b>ToA</b><br><br><b>Show Everything</b> \u2014 legacy, all tags visible<br><b>Hide Names, Show Max Hits</b> \u2014 (default) clears the clutter, keeps combat data<br><b>Disable Plugin Completely</b> \u2014 hides everything inside these zones</html>", position = 3, section = edgeCasesSection)
+    @ConfigItem(keyName = "minigameBehavior", name = "Wave Minigame Behavior", description = "<html>Controls the plugin inside raids and combat minigames where standard aggression rules don't apply (or visual clutter is high):<br>&nbsp;&nbsp;<b>Fight Caves</b>, <b>Inferno</b>, <b>Colosseum</b>, <b>NMZ</b><br>&nbsp;&nbsp;<b>The Gauntlet & Corrupted Gauntlet</b><br>&nbsp;&nbsp;<b>Chambers of Xeric</b>, <b>Theatre of Blood</b>, <b>ToA</b><br>&nbsp;&nbsp;<b>Pest Control</b>, <b>Barbarian Assault</b>, <b>Soul Wars</b>, <b>Temple Trekking</b>, <b>GOTR</b><br><br><b>Show Everything</b> \u2014 legacy, all tags visible<br><b>Hide Names, Show Max Hits</b> \u2014 (default) clears the clutter, keeps combat data<br><b>Disable Plugin Completely</b> \u2014 hides everything inside these zones</html>", position = 3, section = edgeCasesSection)
     default MinigameBehavior minigameBehavior() {
         return MinigameBehavior.HIDE_NAMES;
     }

@@ -34,14 +34,13 @@ import net.runelite.api.coords.WorldArea;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.client.eventbus.Subscribe;
-import java.time.Duration;
-import java.time.Instant;
 
 /**
  * Aggro Tag Plugin
  *
  * Shows a configurable name tag, square marker, and/or max hit label above any
- * NPC that will attack the player on sight. Features an optional dynamic Line of
+ * NPC that will attack the player on sight. Features an optional dynamic Line
+ * of
  * Sight (LOS) aggression radius and intelligent single-combat dimming to keep
  * the screen clear.
  *
@@ -54,26 +53,28 @@ import java.time.Instant;
  *
  * ── What IS Handled ──────────────────────────────────────────────────────────
  * 1. Core Mechanics: Standard 2x combat level aggression math, which is
- *    correctly bypassed when the player enters the Wilderness.
+ * correctly bypassed when the player enters the Wilderness.
  * 2. 10-Minute Tolerance: Accurately tracks regional chunk boundaries and plane
- *    changes to emulate the invisible OSRS tolerance timers.
+ * changes to emulate the invisible OSRS tolerance timers.
  * 3. Disguises & Pacifiers: Precise item-check overrides for Ape Atoll
- *    (Greegree), Darkmeyer (Vyre Noble), Mourner HQ (Mourner gear), Desert
- *    Bandits, Revenants (Ethereum).
+ * (Greegree), Darkmeyer (Vyre Noble), Mourner HQ (Mourner gear), Desert
+ * Bandits, Revenants (Ethereum).
  * 4. God Wars Dungeon: Full faction immunity mapping that correctly suspends
- *    inside the actual Boss rooms where immunity is ignored by the engine.
+ * inside the actual Boss rooms where immunity is ignored by the engine.
  * 5. Slayer Integration: Dynamically tags task-only aggressors (e.g., Wyverns,
- *    Kurasks) only when you have an active task for them via RuneLite's Slayer
- *    service.
+ * Kurasks) only when you have an active task for them via RuneLite's Slayer
+ * service.
  * 6. Minigame Clutter: Automatically filters tags in Wave minigames (Inferno,
- *    NMZ, Gauntlet) and Raids (CoX, ToB, ToA) to show only vital max-hit data.
+ * NMZ, Gauntlet) and Raids (CoX, ToB, ToA) to show only vital max-hit data.
  *
  * ── Known Limitations (require runtime game state) ───────────────────────────
- * - Quest-state aggression: Some NPCs become hostile mid-quest and revert after.
- *   Would require tracking quest completion state via the Quests API.
- *   → Plugin treats these as unknown and falls back to the 2x rule.
- * - Prayer/Protect interactions: Prayers affect damage taken, not whether an NPC
- *   initiates combat. This was never an aggression-detection concern.
+ * - Quest-state aggression: Some NPCs become hostile mid-quest and revert
+ * after.
+ * Would require tracking quest completion state via the Quests API.
+ * → Plugin treats these as unknown and falls back to the 2x rule.
+ * - Prayer/Protect interactions: Prayers affect damage taken, not whether an
+ * NPC
+ * initiates combat. This was never an aggression-detection concern.
  *
  * ── Refreshing NPC Data ──────────────────────────────────────────────────────
  * To regenerate npc_data.json after a game update:
@@ -96,15 +97,15 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     private static final Set<Integer> ALWAYS_AGGRESSIVE_IDS = new HashSet<>(Arrays.asList(
 
             // ── Wilderness Bosses & Demibosses ─────────────────────────────────────────
-            2054,  // Chaos Elemental
-            6619,  // Chaos Fanatic
-            6618,  // Crazy Archaeologist
-            6615,  // Scorpia
-            6503,  // Callisto
-            6509,  // Callisto
-            6504,  // Venenatis
-            6611,  // Vet'ion
-            6612,  // Vet'ion (Enrage)
+            2054, // Chaos Elemental
+            6619, // Chaos Fanatic
+            6618, // Crazy Archaeologist
+            6615, // Scorpia
+            6503, // Callisto
+            6509, // Callisto
+            6504, // Venenatis
+            6611, // Vet'ion
+            6612, // Vet'ion (Enrage)
             12002, // Vet'ion (Alternative ID)
             11992, // Artio (Callisto re-variant)
             11998, // Spindel (Venenatis re-variant)
@@ -113,38 +114,38 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             11995, // Calvar'ion (Vet'ion re-variant)
 
             // ── Wilderness Revenants (Attack regardless of level) ─────────────────────
-            7881,  // Revenant Imp
-            7931,  // Revenant Goblin
-            7932,  // Revenant Pyrefiend
-            7933,  // Revenant Hobgoblin
-            7934,  // Revenant Cyclops
-            7935,  // Revenant Hellhound
-            7936,  // Revenant Demon
-            7937,  // Revenant Ork
-            7938,  // Revenant Dark Beast
-            7939,  // Revenant Knight
-            7940,  // Revenant Dragon
+            7881, // Revenant Imp
+            7931, // Revenant Goblin
+            7932, // Revenant Pyrefiend
+            7933, // Revenant Hobgoblin
+            7934, // Revenant Cyclops
+            7935, // Revenant Hellhound
+            7936, // Revenant Demon
+            7937, // Revenant Ork
+            7938, // Revenant Dark Beast
+            7939, // Revenant Knight
+            7940, // Revenant Dragon
             11246, // Revenant Maledictus — spawns randomly in Revenant Caves
 
             // ── The Abyss (Never lose tolerance) ──────────────────────────────────────
-            2584,  // Abyssal Leech
-            2585,  // Abyssal Guardian
-            2586,  // Abyssal Walker
+            2584, // Abyssal Leech
+            2585, // Abyssal Guardian
+            2586, // Abyssal Walker
 
             // ── Instanced / True Aggro Bosses ─────────────────────────────────────────
-            2215,  // General Graardor
-            3162,  // Kree'arra
-            2205,  // Commander Zilyana
-            3129,  // K'ril Tsutsaroth
-            2042,  // Zulrah
-            2266,  // Dagannoth Prime
-            2267,  // Dagannoth Rex
-            2265,  // Dagannoth Supreme
-            8615   // Alchemical Hydra
+            2215, // General Graardor
+            3162, // Kree'arra
+            2205, // Commander Zilyana
+            3129, // K'ril Tsutsaroth
+            2042, // Zulrah
+            2266, // Dagannoth Prime
+            2267, // Dagannoth Rex
+            2265, // Dagannoth Supreme
+            8615 // Alchemical Hydra
 
-            // NOTE: Standard Slayer monsters (Dragons, Demons, etc.) are INTENTIONALLY
-            // EXCLUDED here. They are naturally handled by Rule 2 below and DO lose
-            // tolerance after 10 minutes.
+    // NOTE: Standard Slayer monsters (Dragons, Demons, etc.) are INTENTIONALLY
+    // EXCLUDED here. They are naturally handled by Rule 2 below and DO lose
+    // tolerance after 10 minutes.
     ));
 
     /**
@@ -202,10 +203,15 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     // ── Tolerance Tracking State ───────────────────────────────────────────────
     private static final int SAFE_AREA_RADIUS = 24;
     private static final int TELEPORT_DISTANCE = SAFE_AREA_RADIUS * 4;
+    /** 10 minutes ÷ 0.6s per tick ≈ 1000 ticks */
+    private static final int TOLERANCE_TICKS = 1000;
 
     private final WorldPoint[] safeCenters = new WorldPoint[2];
     private WorldPoint lastPlayerLocation;
-    private Instant toleranceStartTime;
+    /**
+     * Accumulated game ticks spent inside an NPC aggro zone in the current area.
+     */
+    private int toleranceTicksAccumulated;
     private boolean loggingIn;
     private int currentPlane = -1;
 
@@ -223,6 +229,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         npcDataLoader.load();
         overlayManager.add(overlay);
         keyManager.registerKeyListener(this);
+        radiusHotkeyHeld = true; // Show radius on login by default
         log.debug("Aggro Tag plugin started");
     }
 
@@ -233,14 +240,23 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         log.debug("Aggro Tag plugin stopped");
     }
 
+    @Provides
+    AggroTagConfig provideConfig(ConfigManager configManager) {
+        return configManager.getConfig(AggroTagConfig.class);
+    }
+
+    // ── Keyboard ──────────────────────────────────────────────────────────────
+
     @Override
     public void keyTyped(KeyEvent e) {
-    }
+        /* unused */ }
 
     @Override
     public void keyPressed(KeyEvent e) {
         if (config.radiusHotkey().matches(e)) {
-            if (!config.radiusToggle()) {
+            if (config.radiusToggle()) {
+                radiusHotkeyHeld = !radiusHotkeyHeld;
+            } else {
                 radiusHotkeyHeld = true;
             }
         }
@@ -248,18 +264,9 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (config.radiusHotkey().matches(e)) {
-            if (config.radiusToggle()) {
-                radiusHotkeyHeld = !radiusHotkeyHeld;
-            } else {
-                radiusHotkeyHeld = false;
-            }
+        if (!config.radiusToggle() && config.radiusHotkey().matches(e)) {
+            radiusHotkeyHeld = false;
         }
-    }
-
-    @Provides
-    AggroTagConfig provideConfig(ConfigManager configManager) {
-        return configManager.getConfig(AggroTagConfig.class);
     }
 
     public AggroTagConfig getConfig() {
@@ -268,6 +275,18 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
 
     public Client getClient() {
         return client;
+    }
+
+    /**
+     * Returns true if the local player is currently in combat
+     * (interacting with an NPC that is also interacting back).
+     */
+    public boolean isPlayerInCombat() {
+        if (client.getLocalPlayer() == null) {
+            return false;
+        }
+        Actor target = client.getLocalPlayer().getInteracting();
+        return target instanceof NPC;
     }
 
     // ── Public API used by the overlay ────────────────────────────────────────
@@ -320,6 +339,10 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
 
         // Rule 2 — Standard OSRS Level-based aggression
         if (inWilderness || (npcLevel > 0 && playerLevel <= (npcLevel * 2))) {
+            // Permanently aggressive NPCs ignore the 10-minute tolerance timer
+            if (config.autoRadius() && NpcAggroRadius.isPermanentlyAggressive(npc)) {
+                return true;
+            }
             if (config.trackTolerance() && hasTolerance())
                 return false;
             return true;
@@ -347,6 +370,34 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         if (npc == null)
             return 0;
         return npcDataLoader.getAttackStyle(npc.getId());
+    }
+
+    /**
+     * Returns the aggression radius (in tiles) for the given NPC.
+     * <ul>
+     * <li>If auto-radius is enabled, uses {@link NpcAggroRadius} lookup (hard-coded
+     * data),
+     * falling back to 5 tiles.</li>
+     * <li>If auto-radius is disabled, uses the user's manual
+     * {@code defaultRadius()} slider.</li>
+     * </ul>
+     *
+     * @return positive tile count, 0 for passive, or -1 for overlay-disabled
+     */
+    public int getAggroRadius(NPC npc) {
+        if (config.autoRadius()) {
+            return NpcAggroRadius.getRadius(npc);
+        }
+        return config.defaultRadius();
+    }
+
+    /**
+     * Returns true when this NPC's aggro overlay should be entirely suppressed
+     * (e.g. scenery-triggered crabs, superiors, TT wizards).
+     * Only active when auto-radius mode is enabled.
+     */
+    public boolean shouldDisableOverlay(NPC npc) {
+        return config.autoRadius() && NpcAggroRadius.shouldDisableOverlay(npc);
     }
 
     /**
@@ -387,7 +438,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
                         if (newLocation != null) {
                             currentPlane = newLocation.getPlane();
                         }
-                        toleranceStartTime = Instant.now();
+                        toleranceTicksAccumulated = 0;
                     }
                 }
                 break;
@@ -399,7 +450,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
                 safeCenters[0] = null;
                 safeCenters[1] = null;
                 lastPlayerLocation = null;
-                toleranceStartTime = null;
+                toleranceTicksAccumulated = 0;
                 currentPlane = -1;
                 break;
             default:
@@ -418,18 +469,20 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
 
         boolean planeChanged = newLocation.getPlane() != currentPlane;
 
+        // Reset tolerance on teleport or plane change
         if (planeChanged
                 || (lastPlayerLocation != null && newLocation.distanceTo2D(lastPlayerLocation) > TELEPORT_DISTANCE)) {
             safeCenters[0] = null;
             safeCenters[1] = newLocation;
-            toleranceStartTime = Instant.now();
+            toleranceTicksAccumulated = 0;
             currentPlane = newLocation.getPlane();
         } else if (safeCenters[1] == null) {
             safeCenters[1] = newLocation;
-            toleranceStartTime = Instant.now();
+            toleranceTicksAccumulated = 0;
             currentPlane = newLocation.getPlane();
         }
 
+        // Reset tolerance when leaving the safe area boundary
         if (safeCenters[1].distanceTo2D(newLocation) > SAFE_AREA_RADIUS) {
             if (safeCenters[0] == null) {
                 safeCenters[0] = safeCenters[1];
@@ -437,18 +490,79 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             } else if (safeCenters[0].distanceTo2D(newLocation) > SAFE_AREA_RADIUS) {
                 safeCenters[0] = safeCenters[1];
                 safeCenters[1] = newLocation;
-                toleranceStartTime = Instant.now();
+                toleranceTicksAccumulated = 0;
             }
+        }
+
+        // Only accumulate tolerance ticks when the player is actually
+        // inside at least one aggressive NPC's aggression radius
+        if (isPlayerInAnyAggroZone(newLocation)) {
+            toleranceTicksAccumulated++;
         }
 
         lastPlayerLocation = newLocation;
     }
 
     private boolean hasTolerance() {
-        if (toleranceStartTime == null) {
+        return toleranceTicksAccumulated >= TOLERANCE_TICKS;
+    }
+
+    /**
+     * Returns true if the player is within any loaded NPC's aggression radius.
+     * This is a lightweight check using Chebyshev distance (max of |dx|, |dy|)
+     * against each NPC's SW-tile and configured radius, matching how OSRS
+     * actually checks aggro zones.
+     */
+    private boolean isPlayerInAnyAggroZone(WorldPoint playerLocation) {
+        if (client.getTopLevelWorldView() == null) {
             return false;
         }
-        return Duration.between(toleranceStartTime, Instant.now()).toMinutes() >= 10;
+
+        int playerLevel = client.getLocalPlayer().getCombatLevel();
+        boolean inWilderness = client.getVarbitValue(VARBIT_IN_WILDERNESS) == 1;
+
+        for (NPC npc : client.getTopLevelWorldView().npcs()) {
+            if (npc == null || npc.getName() == null || npc.getCombatLevel() == 0) {
+                continue;
+            }
+
+            // Skip NPCs that wouldn't be aggressive by the 2x combat rule
+            // (unless in wilderness where everything is aggressive)
+            int npcLevel = npc.getCombatLevel();
+            if (!inWilderness && playerLevel > npcLevel * 2) {
+                continue;
+            }
+
+            // Get the aggro radius for this NPC
+            int radius = getAggroRadius(npc);
+            if (radius <= 0) {
+                continue; // Passive or overlay-disabled
+            }
+
+            // Check Chebyshev distance from player to the NPC's center
+            WorldPoint npcLocation = npc.getWorldLocation();
+            if (npcLocation == null || npcLocation.getPlane() != playerLocation.getPlane()) {
+                continue;
+            }
+
+            NPCComposition comp = npc.getTransformedComposition();
+            if (comp == null)
+                comp = npc.getComposition();
+            int size = comp != null ? comp.getSize() : 1;
+
+            // NPC center is offset from SW tile by (size-1)/2
+            int npcCenterX = npcLocation.getX() + (size - 1) / 2;
+            int npcCenterY = npcLocation.getY() + (size - 1) / 2;
+
+            int dx = Math.abs(playerLocation.getX() - npcCenterX);
+            int dy = Math.abs(playerLocation.getY() - npcCenterY);
+            int chebyshev = Math.max(dx, dy);
+
+            if (chebyshev <= radius) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
@@ -581,13 +695,19 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     }
 
     private boolean isTaskOnlyAggressor(String safeName) {
-        return safeName.contains("kurask") ||
-                safeName.contains("wyvern") ||
+        return safeName.equals("kurask") ||
+                safeName.equals("skeletal wyvern") ||
                 safeName.equals("cave horror") ||
                 safeName.equals("wyrm") ||
                 safeName.equals("drake") ||
                 safeName.equals("hydra") ||
-                safeName.equals("basilisk knight");
+                safeName.equals("basilisk knight") ||
+                safeName.equals("gargoyle") ||
+                safeName.equals("abyssal demon") ||
+                safeName.equals("nechryael") ||
+                safeName.equals("greater nechryael") ||
+                safeName.equals("dust devil") ||
+                safeName.equals("cave kraken");
     }
 
     private boolean hasGreegreeEquipped() {
@@ -625,7 +745,6 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         return gloves != null && gloves.getId() == BRACELET_OF_ETHEREUM;
     }
 
-
     private boolean hasFullMournerEquipped() {
         ItemContainer equipment = client.getItemContainer(INVENTORY_ID_EQUIPMENT);
         if (equipment == null)
@@ -642,7 +761,8 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             return false;
         }
 
-        // 1506 = Gas mask, 6070 = Cloak, 6065 = Top, 6067 = Trousers, 6068 = Gloves, 6069 = Boots
+        // 1506 = Gas mask, 6070 = Cloak, 6065 = Top, 6067 = Trousers, 6068 = Gloves,
+        // 6069 = Boots
         return head.getId() == 1506 && cape.getId() == 6070 && chest.getId() == 6065 &&
                 legs.getId() == 6067 && gloves.getId() == 6068 && boots.getId() == 6069;
     }
@@ -748,7 +868,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
                     // Bankers & traders
                     "banker", "bank teller", "grand exchange clerk",
                     // Monks
-                    "monk", "monk of zamorak",
+                    "monk",
                     // Farmers
                     "farmer",
                     // Generic guards (non-aggressive variants)
@@ -760,15 +880,11 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
                     // Elves
                     "elf", "elf guard",
                     // Thieves guild
-                    "thief"
-            ))
-    );
+                    "thief")));
 
     private static final Set<String> PASSIVE_IF_LOW_LEVEL = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList(
-                    "goblin"
-            ))
-    );
+                    "goblin")));
 
     private Boolean evaluateHeuristics(String safeName, int npcLevel) {
         if (PASSIVE_EXACT_NAMES.contains(safeName)) {

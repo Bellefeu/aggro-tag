@@ -60,7 +60,7 @@ public class AggroTagOverlay extends Overlay {
 
     /** Yellow — melee attack style AND the default single-label colour. */
     private static final Color COLOR_DEFAULT = new Color(255, 210, 0, 255);
-    /** Yellow — melee (same as default, so single-label mode is consistent). */
+    /** Yellow — melee. */
     private static final Color COLOR_MELEE = COLOR_DEFAULT;
     /** Blue — magic attack style. */
     private static final Color COLOR_MAGIC = new Color(100, 160, 255, 255);
@@ -77,20 +77,34 @@ public class AggroTagOverlay extends Overlay {
     private static final Set<Integer> MINIGAME_REGIONS = new HashSet<>(Arrays.asList(
             9551, // Fight Caves
             9043, // Inferno
-            7176, // Fortis Colosseum
+            7216, // Fortis Colosseum
             9033, // Nightmare Zone (NMZ)
             7512, // The Gauntlet
             7768, // The Corrupted Gauntlet
 
             // ── Chambers of Xeric (CoX)
             12889, 13136, 13137, 13138, 13139, 13140, 13141, 13145,
-            13393, 13394, 13395, 13396, 13397, 13398,
+            13393, 13394, 13395, 13396, 13397, 13401,
 
             // ── Theatre of Blood (ToB)
             12611, 12612, 12613, 12867, 12869, 13122, 13123, 13125,
 
             // ── Tombs of Amascut (ToA)
-            14160, 14162, 14164, 14674, 14676, 15184, 15186, 15188, 15696, 15698, 15700));
+            14160, 14162, 14164, 14672, 14674, 14676, 15184, 15186, 15188, 15696, 15698, 15700,
+
+            // ── Pest Control
+            10536, 10537,
+
+            // ── Barbarian Assault
+            7509, 7508,
+
+            // ── Guardians of the Rift (Temple of the Eye)
+            14484,
+
+            // ── Soul Wars (Game Arena)
+            8493, 8749, 9005,
+            // ── Temple Trekking / Burgh de Rott Ramble
+            10419));
 
     /** Pixels above the NPC's logical head where the label is drawn. */
     private static final int TEXT_HEIGHT_OFFSET = 40;
@@ -129,7 +143,10 @@ public class AggroTagOverlay extends Overlay {
 
             boolean isAggro = plugin.isAggressive(npc);
             if (isAggro) {
-                aggressiveNpcs.add(npc);
+                // Filter out NPCs whose overlay is fully suppressed (crabs, superiors, etc.)
+                if (!plugin.shouldDisableOverlay(npc)) {
+                    aggressiveNpcs.add(npc);
+                }
             }
 
             if (npc.getInteracting() == client.getLocalPlayer()) {
@@ -169,7 +186,11 @@ public class AggroTagOverlay extends Overlay {
             if (!showRadius)
                 continue;
 
-            int radius = plugin.getConfig().defaultRadius();
+            int radius = plugin.getAggroRadius(npc);
+            // Skip passive or overlay-disabled NPCs
+            if (radius <= 0)
+                continue;
+
             NPCComposition comp = npc.getTransformedComposition();
             if (comp == null)
                 comp = npc.getComposition();
@@ -236,17 +257,38 @@ public class AggroTagOverlay extends Overlay {
                     }
                 }
             } else {
+                // Non-LOS mode: draw a simple square polygon
+                // SW-tile centering: npcLocation is already the SW tile.
+                // We offset to the center of the NPC (accounting for size) and
+                // then draw a totalSize area around that center.
                 int totalSize = size + 2 * radius;
-                LocalPoint drawPoint = npc.getLocalLocation();
+                var worldView = client.getTopLevelWorldView();
+                LocalPoint drawPoint = null;
 
-                if (useTrueTile) {
-                    var worldView = client.getTopLevelWorldView();
-                    if (npcLocation != null && worldView != null) {
-                        LocalPoint strictLp = LocalPoint.fromWorld(worldView, npcLocation);
-                        if (strictLp != null) {
-                            int sizeOffset = (size - 1) * (Perspective.LOCAL_TILE_SIZE / 2);
-                            drawPoint = new LocalPoint(strictLp.getX() + sizeOffset, strictLp.getY() + sizeOffset,
-                                    worldView);
+                if (npcLocation != null && worldView != null) {
+                    LocalPoint swLp = LocalPoint.fromWorld(worldView, npcLocation);
+                    if (swLp != null) {
+                        int sizeOffset = (size - 1) * (Perspective.LOCAL_TILE_SIZE / 2);
+                        LocalPoint centerLp = new LocalPoint(
+                                swLp.getX() + sizeOffset,
+                                swLp.getY() + sizeOffset,
+                                worldView);
+
+                        if (useTrueTile) {
+                            drawPoint = centerLp;
+                        } else {
+                            // Smooth: blend between strict grid and animated position
+                            LocalPoint actualLocal = npc.getLocalLocation();
+                            if (actualLocal != null) {
+                                int smoothOffsetX = actualLocal.getX() - centerLp.getX();
+                                int smoothOffsetY = actualLocal.getY() - centerLp.getY();
+                                drawPoint = new LocalPoint(
+                                        centerLp.getX() + smoothOffsetX,
+                                        centerLp.getY() + smoothOffsetY,
+                                        worldView);
+                            } else {
+                                drawPoint = centerLp;
+                            }
                         }
                     }
                 }
@@ -265,6 +307,10 @@ public class AggroTagOverlay extends Overlay {
             Color tagColor = plugin.getConfig().radiusColor();
 
             int opacity = plugin.getConfig().radiusOpacity();
+            // Dim the radius to near-invisible when the player is in combat
+            if (plugin.getConfig().dimRadiusInCombat() && plugin.isPlayerInCombat()) {
+                opacity = plugin.getConfig().dimmedRadiusOpacity();
+            }
             int radiusAlpha = (int) ((opacity / 100.0f) * 255);
             Color fillColor = new Color(tagColor.getRed(), tagColor.getGreen(), tagColor.getBlue(), radiusAlpha);
 
@@ -308,7 +354,8 @@ public class AggroTagOverlay extends Overlay {
         }
 
         // ── Hide Aggro / Hide Targeting ────────────────────────────────────────────
-        // These flags only suppress the name/square marker — max hit overlays still render.
+        // These flags only suppress the name/square marker — max hit overlays still
+        // render.
         boolean isTargetingPlayer = npc.getInteracting() == client.getLocalPlayer();
         boolean hiddenByConfig = (isTargetingPlayer && plugin.getConfig().hideTargeting())
                 || (!isTargetingPlayer && plugin.getConfig().hideAggro());
@@ -356,7 +403,7 @@ public class AggroTagOverlay extends Overlay {
         // The API already positions the name centered over the NPC, so we draw
         // the name at textPoint.getX() directly. NPC ID goes to the left, max hit
         // appends to the right.
-        int npcCenterX = textPoint.getX() + nameWidth / 2;
+        int npcCenterX = textPoint.getX() + nameWidth / 2 + plugin.getConfig().tagHorizontalOffset();
         boolean useSquare = plugin.getConfig().useSquareMarker();
         int squareWidth = 0; // Keep track for max hit offset
 
@@ -392,7 +439,7 @@ public class AggroTagOverlay extends Overlay {
                 graphics.fillRect(sqX, sqY, sSize, sSize);
             } else {
                 // Name is the centered anchor; ID goes to the left of it
-                int nameStartX = textPoint.getX();
+                int nameStartX = textPoint.getX() + plugin.getConfig().tagHorizontalOffset();
 
                 if (plugin.getConfig().showNpcId()) {
                     drawTextWithShadow(graphics, idStr, nameStartX - idWidth, y, Color.WHITE);
@@ -434,22 +481,75 @@ public class AggroTagOverlay extends Overlay {
             labelX = npcCenterX + totalWidth / 2 + 2;
         } else {
             // Append to the right of the name
-            labelX = textPoint.getX() + nameWidth;
+            labelX = textPoint.getX() + nameWidth + plugin.getConfig().tagHorizontalOffset();
         }
 
-        if (plugin.getConfig().colorByAttackStyle()) {
+        // Determine if a threshold color override is active
+        boolean useThresholdColor = false;
+        Color thresholdColor = null;
+        int rawHpPercent = 0;
+        if (plugin.getConfig().colorHpNumber()) {
+            int hp = client.getBoostedSkillLevel(Skill.HITPOINTS);
+            rawHpPercent = hp > 0 ? (maxHit * 100) / hp : 0;
+            Color baseColor = plugin.getConfig().maxHitBaseColor();
+            Color resolved = getThresholdColor(rawHpPercent);
+            // Only override if a threshold was actually reached (color differs from base)
+            if (!resolved.equals(baseColor)) {
+                useThresholdColor = true;
+                thresholdColor = resolved;
+            }
+        }
+
+        if (useThresholdColor) {
+            // Threshold reached — use threshold color + size increase for the entire label
+            Font savedFont = graphics.getFont();
+            boolean fontChanged = false;
+            int sizeInc = plugin.getConfig().hpPercentSizeIncrease();
+            int t1 = plugin.getConfig().hpPercentThreshold1();
+            int t2 = plugin.getConfig().hpPercentThreshold2();
+            if (t1 >= t2) {
+                if (rawHpPercent >= t1)
+                    sizeInc += plugin.getConfig().hpPercentSizeIncrease50();
+                else if (rawHpPercent >= t2)
+                    sizeInc += plugin.getConfig().hpPercentSizeIncrease100();
+            } else {
+                if (rawHpPercent >= t2)
+                    sizeInc += plugin.getConfig().hpPercentSizeIncrease100();
+                else if (rawHpPercent >= t1)
+                    sizeInc += plugin.getConfig().hpPercentSizeIncrease50();
+            }
+            if (sizeInc > 0) {
+                graphics.setFont(savedFont.deriveFont(savedFont.getSize2D() + sizeInc));
+                fontChanged = true;
+            }
+
+            FontMetrics fmScaled = graphics.getFontMetrics();
+            String prefix = centerLabel ? "[" + maxHit : " [" + maxHit;
+            drawTextWithShadow(graphics, prefix, labelX, y, thresholdColor);
+            int curX = labelX + fmScaled.stringWidth(prefix);
+
+            if (hpPercent >= 0) {
+                curX = drawPercentageSuffix(graphics, fmScaled, curX, y, hpPercent);
+            }
+
+            drawTextWithShadow(graphics, "]", curX, y, thresholdColor);
+
+            if (fontChanged) {
+                graphics.setFont(savedFont);
+            }
+        } else if (plugin.getConfig().colorByAttackStyle()) {
             renderStyleColoredHit(graphics, fm, npc, maxHit, hpPercent, labelX, y, centerLabel);
         } else {
-            // Single yellow label — default / legacy
+            Color baseColor = plugin.getConfig().maxHitBaseColor();
             String prefix = centerLabel ? "[" + maxHit : " [" + maxHit;
-            drawTextWithShadow(graphics, prefix, labelX, y, COLOR_DEFAULT);
+            drawTextWithShadow(graphics, prefix, labelX, y, baseColor);
             int curX = labelX + fm.stringWidth(prefix);
 
             if (hpPercent >= 0) {
                 curX = drawPercentageSuffix(graphics, fm, curX, y, hpPercent);
             }
 
-            drawTextWithShadow(graphics, "]", curX, y, COLOR_DEFAULT);
+            drawTextWithShadow(graphics, "]", curX, y, baseColor);
         }
 
         // Always restore the composite regardless of which path was taken above
@@ -509,6 +609,30 @@ public class AggroTagOverlay extends Overlay {
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
+    /**
+     * Returns the threshold color for the given hpPercent value.
+     * Falls back to COLOR_DEFAULT (yellow) if no threshold is reached.
+     */
+    private Color getThresholdColor(int hpPercent) {
+        int t1 = plugin.getConfig().hpPercentThreshold1();
+        int t2 = plugin.getConfig().hpPercentThreshold2();
+
+        if (t1 >= t2) {
+            if (hpPercent >= t1) {
+                return plugin.getConfig().colorHpPercent50();
+            } else if (hpPercent >= t2) {
+                return plugin.getConfig().colorHpPercent100();
+            }
+        } else {
+            if (hpPercent >= t2) {
+                return plugin.getConfig().colorHpPercent100();
+            } else if (hpPercent >= t1) {
+                return plugin.getConfig().colorHpPercent50();
+            }
+        }
+        return plugin.getConfig().maxHitBaseColor();
+    }
+
     private boolean isHovering(NPC npc) {
         Shape hull = npc.getConvexHull();
         if (hull != null) {
@@ -562,25 +686,29 @@ public class AggroTagOverlay extends Overlay {
             }
         }
 
-        // Determine font size
+        // Determine font size — base size increase always applies
         Font oldFont = graphics.getFont();
         boolean changedFont = false;
-        if (plugin.getConfig().colorHpPercent()) {
+        {
             int sizeInc = plugin.getConfig().hpPercentSizeIncrease();
-            int t1 = plugin.getConfig().hpPercentThreshold1();
-            int t2 = plugin.getConfig().hpPercentThreshold2();
 
-            if (t1 >= t2) {
-                if (hpPercent >= t1) {
-                    sizeInc += plugin.getConfig().hpPercentSizeIncrease50();
-                } else if (hpPercent >= t2) {
-                    sizeInc += plugin.getConfig().hpPercentSizeIncrease100();
-                }
-            } else {
-                if (hpPercent >= t2) {
-                    sizeInc += plugin.getConfig().hpPercentSizeIncrease100();
-                } else if (hpPercent >= t1) {
-                    sizeInc += plugin.getConfig().hpPercentSizeIncrease50();
+            // Threshold-based size increases apply when either custom color mode is on
+            if (plugin.getConfig().colorHpPercent() || plugin.getConfig().colorHpNumber()) {
+                int t1 = plugin.getConfig().hpPercentThreshold1();
+                int t2 = plugin.getConfig().hpPercentThreshold2();
+
+                if (t1 >= t2) {
+                    if (hpPercent >= t1) {
+                        sizeInc += plugin.getConfig().hpPercentSizeIncrease50();
+                    } else if (hpPercent >= t2) {
+                        sizeInc += plugin.getConfig().hpPercentSizeIncrease100();
+                    }
+                } else {
+                    if (hpPercent >= t2) {
+                        sizeInc += plugin.getConfig().hpPercentSizeIncrease100();
+                    } else if (hpPercent >= t1) {
+                        sizeInc += plugin.getConfig().hpPercentSizeIncrease50();
+                    }
                 }
             }
 
@@ -611,7 +739,7 @@ public class AggroTagOverlay extends Overlay {
         }
 
         FontMetrics fm = graphics.getFontMetrics();
-        int x = textPoint.getX() - fm.stringWidth(idStr) / 2;
+        int x = textPoint.getX() - fm.stringWidth(idStr) / 2 + plugin.getConfig().tagHorizontalOffset();
         int y = textPoint.getY() + plugin.getConfig().tagVerticalOffset();
 
         // White text, consistent with the tagged NPC ID color
