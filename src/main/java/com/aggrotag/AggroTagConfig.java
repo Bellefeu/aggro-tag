@@ -78,6 +78,9 @@ public interface AggroTagConfig extends Config {
     @ConfigSection(name = "Aggression Radius", description = "Settings for visualizing the attack range of aggressive NPCs", position = 30, closedByDefault = true)
     String radiusSection = "radiusSection";
 
+    @ConfigSection(name = "NPC Outline", description = "Settings for drawing an outline around aggressive NPCs", position = 25, closedByDefault = true)
+    String npcOutlineSection = "npcOutlineSection";
+
     @ConfigSection(name = "NPC ID & Level", description = "Options for showing NPC IDs and Combat Levels on tags", position = 50, closedByDefault = true)
     String npcIdSection = "npcIdSection";
 
@@ -198,6 +201,41 @@ public interface AggroTagConfig extends Config {
     @ConfigItem(keyName = "squareOutlineSize", name = "Outline Thickness", description = "The thickness of the square's outline.", position = 6, section = squareMarkerSection)
     default int squareOutlineSize() {
         return 0;
+    }
+
+    // ── NPC OUTLINE ────────────────────────────────────────────────────────────
+
+    @ConfigItem(keyName = "npcOutline", name = "Outline Aggressive NPCs", description = "Draw an outline around Aggressive and Targeting-You NPCs.", position = 1, section = npcOutlineSection)
+    default boolean npcOutline() {
+        return true;
+    }
+
+    @ConfigItem(keyName = "npcOutlineAggroColor", name = "Outline Aggro", description = "Color of the outline for NPCs that would attack you on approach.", position = 2, section = npcOutlineSection)
+    default Color npcOutlineAggroColor() {
+        return new Color(255, 60, 60, 230);
+    }
+
+    @ConfigItem(keyName = "npcOutlineTargetingYouColor", name = "Outline Targeting-You", description = "Color of the outline when an NPC is actively targeting/chasing you right now.", position = 3, section = npcOutlineSection)
+    default Color npcOutlineTargetingYouColor() {
+        return new Color(255, 140, 0, 255);
+    }
+
+    @Range(min = 1, max = 50)
+    @ConfigItem(keyName = "npcOutlineWidth", name = "Outline Width", description = "Width of the NPC outline.", position = 4, section = npcOutlineSection)
+    default int npcOutlineWidth() {
+        return 1;
+    }
+
+    @Range(min = 0, max = 50)
+    @ConfigItem(keyName = "npcOutlineFeather", name = "Outline Feather", description = "How much to feather/blur the NPC outline.", position = 5, section = npcOutlineSection)
+    default int npcOutlineFeather() {
+        return 3;
+    }
+
+    @Range(min = 0, max = 100)
+    @ConfigItem(keyName = "npcOutlineOpacity", name = "Outline Opacity", description = "Adjust the opacity of the NPC outline (0 is fully transparent, 100 is fully opaque).", position = 6, section = npcOutlineSection)
+    default int npcOutlineOpacity() {
+        return 100;
     }
 
     // ── AGGRESSION RADIUS ──────────────────────────────────────────────────────

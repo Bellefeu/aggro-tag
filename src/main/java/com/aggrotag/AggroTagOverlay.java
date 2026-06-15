@@ -26,6 +26,7 @@ import javax.annotation.Nonnull;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
+import net.runelite.client.ui.overlay.outline.ModelOutlineRenderer;
 
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.coords.LocalPoint;
@@ -130,12 +131,14 @@ public class AggroTagOverlay extends Overlay {
         WorldPoint worldPoint;
     }
     private final java.util.Map<Integer, Point2D.Float> tagOffsets = new java.util.HashMap<>();
+    private final ModelOutlineRenderer modelOutlineRenderer;
 
     @Inject
-    public AggroTagOverlay(AggroTagPlugin plugin, @Nonnull Client client) {
+    public AggroTagOverlay(AggroTagPlugin plugin, @Nonnull Client client, ModelOutlineRenderer modelOutlineRenderer) {
 
         this.plugin = plugin;
         this.client = client;
+        this.modelOutlineRenderer = modelOutlineRenderer;
 
         setPosition(OverlayPosition.DYNAMIC);
         setLayer(OverlayLayer.ABOVE_SCENE);
@@ -528,7 +531,7 @@ public class AggroTagOverlay extends Overlay {
                 height += 4;
             }
             if (centerLabel) {
-                totalWidth = maxHitWidth;
+                totalWidth = idWidth + maxHitWidth;
             } else {
                 totalWidth += maxHitWidth + 2; 
             }
@@ -662,7 +665,19 @@ public class AggroTagOverlay extends Overlay {
         // appends to the right.
         int npcCenterX = shiftedTextX + nameWidth / 2 + plugin.getConfig().tagHorizontalOffset();
         boolean useSquare = plugin.getConfig().useSquareMarker();
+        boolean useOutline = plugin.getConfig().npcOutline();
         int squareWidth = 0; // Keep track for max hit offset
+
+        if (isCombatState && useOutline) {
+            Color outlineColor = isTargetingPlayer ? plugin.getConfig().npcOutlineTargetingYouColor()
+                    : plugin.getConfig().npcOutlineAggroColor();
+            
+            float outlineAlphaMult = plugin.getConfig().npcOutlineOpacity() / 100f;
+            float finalAlpha = (outlineColor.getAlpha() / 255f) * alpha * outlineAlphaMult;
+            outlineColor = new Color(outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), Math.min(255, Math.max(0, (int) (finalAlpha * 255))));
+            
+            modelOutlineRenderer.drawOutline(npc, plugin.getConfig().npcOutlineWidth(), outlineColor, plugin.getConfig().npcOutlineFeather());
+        }
 
         if (showName) {
             if (useSquare) {
