@@ -60,8 +60,16 @@ public final class NpcAggroRadius {
         m.put(413, 3);
         m.put(1543, 3);
 
+        // Uniques — 1-tile aggro range
+        // Giant Bat
+        m.put(2834, 1);
+
         // Uniques — 3-tile aggro range
-        m.put(2834, 3);
+        // Dark Wizard
+        m.put(5086, 3);
+        m.put(5087, 3);
+        m.put(5088, 3);
+        m.put(5089, 3);
 
         // ── Category 2: Extended Range Constants ─────────────────────────────
         // Dagannoth Kings — 7-tile aggro
@@ -299,9 +307,11 @@ public final class NpcAggroRadius {
         m.put("aberrant spectre", 1);
         m.put("deviant spectre", 1);
         m.put("mutated bloodveld", 1);
+        m.put("giant bat", 1);
         m.put("kurask", 2);
         m.put("wyrm", 2);
         m.put("gargoyle", 3);
+        m.put("dark wizard", 3);
 
         // Category 2: Extended range
         m.put("brutal black dragon", 8);

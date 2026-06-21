@@ -355,7 +355,7 @@ public class AggroTagOverlay extends Overlay {
             }
 
             if (plugin.getConfig().radiusLineOfSight()) {
-                if (npcLocation != null && swLocal != null) {
+                if (npcLocation != null && swLocal != null && worldView != null) {
                     AggroTagPlugin.LosCache cache = plugin.getLosTiles(npc, npcLocation, radius, size);
 
                     java.awt.geom.Area pure2DGrid = new java.awt.geom.Area();

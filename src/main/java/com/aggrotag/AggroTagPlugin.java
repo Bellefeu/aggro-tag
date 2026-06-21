@@ -9,8 +9,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 import net.runelite.client.input.KeyListener;
 import net.runelite.client.input.KeyManager;
 import java.awt.event.KeyEvent;
@@ -742,18 +740,30 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         if (npcLocation != null && worldView != null) {
             WorldArea npcArea = new WorldArea(npcLocation, size, size);
 
-            int maxTiles = (radius * 2 + 1) * (radius * 2 + 1);
+            int minDx = Math.min(-radius, 0);
+            int maxDx = Math.max(radius, size - 1);
+            int minDy = Math.min(-radius, 0);
+            int maxDy = Math.max(radius, size - 1);
+
+            int maxTiles = (maxDx - minDx + 1) * (maxDy - minDy + 1);
             if (cache.packedOffsets.length < maxTiles) {
                 cache.packedOffsets = new int[maxTiles];
             }
 
-            for (int dx = -radius; dx <= radius; dx++) {
-                for (int dy = -radius; dy <= radius; dy++) {
-                    WorldPoint targetPoint = npcLocation.dx(dx).dy(dy);
-                    WorldArea targetArea = new WorldArea(targetPoint, 1, 1);
-
-                    if (npcArea.hasLineOfSightTo(worldView, targetArea)) {
+            for (int dx = minDx; dx <= maxDx; dx++) {
+                for (int dy = minDy; dy <= maxDy; dy++) {
+                    boolean isInsideNpc = dx >= 0 && dx < size && dy >= 0 && dy < size;
+                    boolean isInsideRadius = dx >= -radius && dx <= radius && dy >= -radius && dy <= radius;
+                    
+                    if (isInsideNpc) {
                         cache.packedOffsets[cache.count++] = (dx << 16) | (dy & 0xFFFF);
+                    } else if (isInsideRadius) {
+                        WorldPoint targetPoint = npcLocation.dx(dx).dy(dy);
+                        WorldArea targetArea = new WorldArea(targetPoint, 1, 1);
+
+                        if (npcArea.hasLineOfSightTo(worldView, targetArea)) {
+                            cache.packedOffsets[cache.count++] = (dx << 16) | (dy & 0xFFFF);
+                        }
                     }
                 }
             }
