@@ -23,25 +23,27 @@ def fetch_json(url, data=None):
     with urllib.request.urlopen(req, data=data) as response:
         return json.loads(response.read().decode('utf-8'))
 
-print("[1/4] Fetching all monster page titles from the wiki...")
-titles = []
-cmcontinue = ""
-page = 0
-while True:
-    url = f"{WIKI_API}?action=query&list=categorymembers&cmtitle=Category:Monsters&cmlimit=500&format=json"
-    if cmcontinue:
-        url += f"&cmcontinue={cmcontinue}"
-    data = fetch_json(url)
-    members = data.get("query", {}).get("categorymembers", [])
-    titles.extend([m["title"] for m in members])
-    page += 1
-    print(f"  Page {page}: got {len(members)} titles")
-    cmcontinue = data.get("continue", {}).get("cmcontinue")
-    if not cmcontinue:
-        break
+print("[1/4] Fetching all monster and NPC page titles from the wiki...")
+titles = set()
+for template in ["Template:Infobox_Monster", "Template:Infobox_NPC"]:
+    eicontinue = ""
+    page = 0
+    while True:
+        url = f"{WIKI_API}?action=query&list=embeddedin&eititle={template}&eilimit=500&format=json"
+        if eicontinue:
+            url += f"&eicontinue={eicontinue}"
+        data = fetch_json(url)
+        members = data.get("query", {}).get("embeddedin", [])
+        titles.update([m["title"] for m in members])
+        page += 1
+        print(f"  {template} Page {page}: got {len(members)} titles")
+        eicontinue = data.get("continue", {}).get("eicontinue")
+        if not eicontinue:
+            break
 
+titles = list(titles)
 total = len(titles)
-print(f"  Total monster pages: {total}")
+print(f"  Total pages to scan: {total}")
 
 print("[2/4] Fetching wikitext and parsing in batches of 50...")
 final_data = {}
@@ -69,8 +71,8 @@ for i in range(0, total, 50):
         if "revisions" not in page_data: continue
         wikitext = page_data["revisions"][0]["slots"]["main"].get("*", "")
         
-        # Split by Infobox Monster
-        boxes = wikitext.split("{{Infobox Monster")
+        # Split by Infobox Monster or Infobox NPC
+        boxes = re.split(r"\{\{Infobox (?:Monster|NPC)", wikitext)
         for b in boxes[1:]:
             lines = b.split("\n")
             
