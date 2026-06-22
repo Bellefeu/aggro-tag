@@ -192,7 +192,7 @@ for nid_str, obj in sorted_data.items():
             passive_dict[name] = []
         passive_dict[name].append(str(nid))
 
-list_file = "wiki_aggro_lists.txt"
+list_file = "src/main/resources/com/aggrotag/wiki_aggro_lists.txt"
 print(f"\nWriting readable lists to {list_file}...")
 with open(list_file, "w", encoding="utf-8") as f:
     f.write("// Aggressive\n")
@@ -213,4 +213,118 @@ check(512)
 check(2058)
 check(510)
 check(2057)
+check(2057)
 check(3033)
+
+# ==============================================================================
+# PHASE 2: ITEM DATA EXTRACTION
+# ==============================================================================
+print("\n" + "="*50)
+print("PHASE 2: ITEM DATA EXTRACTION")
+print("="*50)
+
+print("[1/3] Fetching all Item page titles from the wiki...")
+item_titles = set()
+eicontinue = ""
+page = 0
+while True:
+    url = f"{WIKI_API}?action=query&list=embeddedin&eititle=Template:Infobox_Item&eilimit=500&einamespace=0&format=json"
+    if eicontinue:
+        url += f"&eicontinue={eicontinue}"
+    data = fetch_json(url)
+    members = data.get("query", {}).get("embeddedin", [])
+    item_titles.update([m["title"] for m in members])
+    page += 1
+    print(f"  Item Pages {page}: got {len(members)} titles")
+    eicontinue = data.get("continue", {}).get("eicontinue")
+    if not eicontinue:
+        break
+
+item_titles = list(item_titles)
+item_total = len(item_titles)
+print(f"  Total item pages to scan: {item_total}")
+
+print("[2/3] Fetching wikitext and parsing items in batches of 50...")
+item_id_map = {} # item_name -> set of ids
+processed = 0
+
+for i in range(0, item_total, 50):
+    batch = item_titles[i:i+50]
+    processed += len(batch)
+    print(f"  Batch {i//50 + 1}: fetched {len(batch)} pages ({processed}/{item_total})")
+    titles_param = "|".join(batch).replace(" ", "_")
+    
+    post_data = {
+        "action": "query",
+        "prop": "revisions",
+        "rvprop": "content",
+        "rvslots": "main",
+        "format": "json",
+        "titles": titles_param
+    }
+    
+    try:
+        resp = fetch_json(WIKI_API, post_data)
+        pages = resp.get("query", {}).get("pages", {})
+        
+        for page_id, page_data in pages.items():
+            if "revisions" not in page_data: continue
+            page_title = page_data.get("title", "Unknown")
+            wikitext = page_data["revisions"][0]["slots"]["main"].get("*", "")
+            
+            boxes = re.split(r"\{\{Infobox Item", wikitext)
+            for b in boxes[1:]:
+                lines = b.split("\n")
+                
+                name_map = {}
+                id_map = {}
+                
+                for line in lines:
+                    m = re.match(r"^\|id([0-9]*)\s*=\s*([0-9,\s]+)", line)
+                    if m:
+                        id_map[m.group(1)] = m.group(2)
+                    
+                    m = re.match(r"^\|name([0-9]*)\s*=\s*(.*)", line)
+                    if m:
+                        name_map[m.group(1)] = m.group(2).strip()
+                        
+                for suffix, ids_str in id_map.items():
+                    # Parse out numeric IDs
+                    ids = [x.strip() for x in ids_str.split(",") if x.strip().isdigit()]
+                    if not ids: continue
+                    
+                    # Clean up name
+                    nm_key = suffix if suffix in name_map else ("" if "" in name_map else None)
+                    item_name = name_map[nm_key] if nm_key is not None else page_title
+                    item_name = re.sub(r"<[^>]+>", "", item_name)
+                    item_name = re.sub(r"\{\{[^}]+\}\}", "", item_name)
+                    item_name = item_name.strip()
+                    if not item_name:
+                        item_name = page_title
+                        
+                    if item_name not in item_id_map:
+                        item_id_map[item_name] = set()
+                    item_id_map[item_name].update(ids)
+                    
+    except Exception as e:
+        print(f"Error processing batch: {e}")
+
+# Convert sets to sorted lists
+item_json_data = {name: sorted(list(ids), key=int) for name, ids in item_id_map.items() if ids}
+# Sort dictionary by case-insensitive name
+item_json_data = dict(sorted(item_json_data.items(), key=lambda x: x[0].lower()))
+
+item_json_file = "src/main/resources/com/aggrotag/wiki_item_ids.json"
+print(f"\n[3/3] Writing items JSON to {item_json_file}...")
+with open(item_json_file, "w", encoding="utf-8") as f:
+    json.dump(item_json_data, f, indent=4)
+
+item_txt_file = "src/main/resources/com/aggrotag/wiki_item_ids.txt"
+print(f"Writing readable items TXT to {item_txt_file}...")
+with open(item_txt_file, "w", encoding="utf-8") as f:
+    f.write("// All items and their IDs (alphabetical)\n")
+    for name, ids in item_json_data.items():
+        f.write(f"{name}: {', '.join(ids)}\n")
+        
+print("==============================================================================")
+print("All data extraction complete!")
