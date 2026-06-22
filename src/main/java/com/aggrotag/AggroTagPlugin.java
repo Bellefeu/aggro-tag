@@ -82,7 +82,7 @@ import net.runelite.client.eventbus.Subscribe;
  * ── Refreshing NPC Data ──────────────────────────────────────────────────────
  * To regenerate npc_data.json after a game update:
  * 1. bash build_npc_data.sh (fetches all wiki monster pages)
- * 2. 
+ * 2.
  * The spot-check output confirms key NPCs are correct before committing.
  */
 @Slf4j
@@ -145,7 +145,6 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             2267, // Dagannoth Rex
             2265, // Dagannoth Supreme
             8615 // Alchemical Hydra
-
     // NOTE: Standard Slayer monsters (Dragons, Demons, etc.) are INTENTIONALLY
     // EXCLUDED here. They are naturally handled by Rule 2 below and DO lose
     // tolerance after 10 minutes.
@@ -447,7 +446,8 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             return false;
 
         boolean npcIsTargetingPlayer = npc.getInteracting() == client.getLocalPlayer();
-        boolean playerIsTargetingNpc = client.getLocalPlayer() != null && client.getLocalPlayer().getInteracting() == npc;
+        boolean playerIsTargetingNpc = client.getLocalPlayer() != null
+                && client.getLocalPlayer().getInteracting() == npc;
 
         if (npcIsTargetingPlayer || playerIsTargetingNpc) {
             return false; // Active targets are never dimmed
@@ -754,7 +754,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
                 for (int dy = minDy; dy <= maxDy; dy++) {
                     boolean isInsideNpc = dx >= 0 && dx < size && dy >= 0 && dy < size;
                     boolean isInsideRadius = dx >= -radius && dx <= radius && dy >= -radius && dy <= radius;
-                    
+
                     if (isInsideNpc) {
                         cache.packedOffsets[cache.count++] = (dx << 16) | (dy & 0xFFFF);
                     } else if (isInsideRadius) {
@@ -859,7 +859,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             return false;
         }
 
-        if (config.trackDesertBandits() && safeName.equals("bandit")) {
+        if (config.trackDesertBandits() && (npc.getId() == 690 || npc.getId() == 695)) {
             if (playerHasFactionItem("saradomin") || playerHasFactionItem("zamorak"))
                 return true;
         }
@@ -901,6 +901,15 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
 
         if (isGwdBossOrMinion(safeName)) {
             return true;
+        }
+
+        int npcId = npc.getId();
+        if (npcId == 955 || npcId == 956 || npcId == 961) {
+            if (client.getLocalPlayer() != null && client.getLocalPlayer().getWorldLocation().getRegionID() == 13972) {
+                if (config.trackTolerance() && hasTolerance())
+                    return false;
+                return true;
+            }
         }
 
         return null;

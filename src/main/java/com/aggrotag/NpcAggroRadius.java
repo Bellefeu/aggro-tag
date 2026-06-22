@@ -49,13 +49,11 @@ public final class NpcAggroRadius {
         Map<Integer, Integer> m = new HashMap<>();
 
         // ── Category 1: Short-Range Exceptions ───────────────────────────────
-        // Kurask — 2-tile aggro range (wiki confirmed: "aggressive range of 2")
-        // NPC IDs 410, 411
+        // Kurask — 2-tile aggro range
         m.put(410, 2);
         m.put(411, 2);
 
-        // Gargoyle — 3-tile aggro range (increased Jan 2024)
-        // NPC IDs 412, 413, 1543
+        // Gargoyle — 3-tile aggro range
         m.put(412, 3);
         m.put(413, 3);
         m.put(1543, 3);
@@ -63,6 +61,62 @@ public final class NpcAggroRadius {
         // Uniques — 1-tile aggro range
         // Giant Bat
         m.put(2834, 1);
+
+        // Wolf
+        m.put(106, 1);
+
+        // Bandit (Varlamore)
+        m.put(13290, 1);
+        m.put(13289, 1);
+        m.put(13288, 1);
+        m.put(13287, 1);
+        m.put(13286, 1);
+        m.put(13285, 1);
+        m.put(13284, 1);
+        m.put(13283, 1);
+
+        // Grizzly Bear (Varlamore)
+        m.put(3424, 1);
+        m.put(3425, 1);
+        m.put(2838, 1);
+        m.put(3423, 1);
+
+        // Uniques — 2-tile aggro range
+        // Jaguar, Jaguar Cub (Varlamore)
+        m.put(12876, 2);
+        m.put(12877, 2);
+
+        // Black Jaguar (Varlamore)
+        m.put(12978, 2);
+
+        // Ocelot (Varlamore)
+        m.put(14545, 2);
+        m.put(14546, 2);
+        m.put(14547, 2);
+        m.put(14548, 2);
+        m.put(14549, 2);
+
+        // Black Unicorn (Varlamore)
+        m.put(2849, 2);
+        m.put(3911, 2);
+
+        // White Wolf
+        m.put(107, 2);
+        m.put(108, 2);
+
+        // Hill Giant (Varlamore)
+        m.put(12848, 2);
+        m.put(12849, 2);
+        m.put(12850, 2);
+
+        // Moss Giant (Varlamore)
+        m.put(12844, 2);
+        m.put(12845, 2);
+        m.put(12846, 2);
+        m.put(12847, 2);
+
+        // Harpie Bug Swarm (Varlamore)
+        m.put(464, 2);
 
         // Uniques — 3-tile aggro range
         // Dark Wizard
@@ -92,6 +146,11 @@ public final class NpcAggroRadius {
         // Thermonuclear Smoke Devil — 8-tile aggro
         m.put(499, 8);
 
+        // Uniques - 8-tile aggro
+        // Dire Wolf (Varlamore)
+        m.put(3426, 8);
+        m.put(9181, 8);
+
         // Deadman mode included ID
         m.put(13659, 8);
 
@@ -103,20 +162,17 @@ public final class NpcAggroRadius {
         m.put(7792, 8);
 
         // ── Category 2 continued: Revenants — 10-12-tile aggro ──────────────────
-        // Revenant Imp=7881, Goblin=7931, Pyrefiend=7932, Hobgoblin=7933
-        // Cyclops=7934, Hellhound=7935, Demon=7936, Ork=7937
-        // Dark Beast=7938, Knight=7939, Dragon=7940
-        m.put(7881, 11);
-        m.put(7931, 11);
-        m.put(7932, 11);
-        m.put(7933, 11);
-        m.put(7934, 11);
-        m.put(7935, 11);
-        m.put(7936, 11);
-        m.put(7937, 11);
-        m.put(7938, 11);
-        m.put(7939, 11);
-        m.put(7940, 11);
+        m.put(7881, 11); // Revenant Imp
+        m.put(7931, 11); // Revenant Goblin
+        m.put(7932, 11); // Revenant Pyrefiend
+        m.put(7933, 11); // Revenant Hobgoblin
+        m.put(7934, 11); // Revenant Cyclops
+        m.put(7935, 11); // Revenant Hellhound
+        m.put(7936, 11); // Revenant Demon
+        m.put(7937, 11); // Revenant Ork
+        m.put(7938, 11); // Revenant Dark Beast
+        m.put(7939, 11); // Revenant Knight
+        m.put(7940, 11); // Revenant Dragon
 
         // ── Category 3: 15-Tile Cap ──────────────────────────────────────────
         // Tormented Demon — 15-tile aggro
@@ -220,11 +276,11 @@ public final class NpcAggroRadius {
         // ── Category 5/6: Overlay Disabled (scenery-triggered crabs, etc.) ───
         // These return -1 to signal "do not render any overlay"
 
-        // Rock Crab (hidden = 101, 103, active = 100, 102)
-        m.put(100, -1);
-        m.put(101, -1);
-        m.put(102, -1);
-        m.put(103, -1);
+        // Rock Crab
+        m.put(100, -1); // Rock Crab (active)
+        m.put(101, -1); // Rock Crab (hidden)
+        m.put(102, -1); // Rock Crab (active)
+        m.put(103, -1); // Rock Crab (hidden)
 
         // Giant Rock Crab
         m.put(2262, -1);
@@ -233,11 +289,11 @@ public final class NpcAggroRadius {
         m.put(5941, -1);
         m.put(5940, -1);
 
-        // Sand Crab (hidden = 5936, 7207, active = 5935, 7206)
-        m.put(5935, -1);
-        m.put(5936, -1);
-        m.put(7207, -1);
-        m.put(7206, -1);
+        // Sand Crab
+        m.put(5935, -1); // Sand Crab (active)
+        m.put(5936, -1); // Sand Crab (hidden)
+        m.put(7207, -1); // Sand Crab (hidden)
+        m.put(7206, -1); // Sand Crab (active)
 
         // King Sand Crab
         m.put(7266, -1);
@@ -304,16 +360,26 @@ public final class NpcAggroRadius {
         Map<String, Integer> m = new HashMap<>();
 
         // Category 1: Short-range
+        m.put("wolf", 1);
         m.put("aberrant spectre", 1);
         m.put("deviant spectre", 1);
         m.put("mutated bloodveld", 1);
         m.put("giant bat", 1);
+        m.put("bandit", 1);
+        m.put("hill giant", 2);
+        m.put("moss giant", 2);
+        m.put("black jaguar", 2);
+        m.put("white wolf", 2);
+        m.put("harpie bug swarm", 2);
         m.put("kurask", 2);
         m.put("wyrm", 2);
+        m.put("jaguar", 2);
+        m.put("jaguar cub", 2);
         m.put("gargoyle", 3);
         m.put("dark wizard", 3);
 
         // Category 2: Extended range
+        m.put("dire wolf", 8);
         m.put("brutal black dragon", 8);
         m.put("brutal red dragon", 8);
         m.put("brutal blue dragon", 8);
