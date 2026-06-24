@@ -190,6 +190,10 @@ public class AggroTagOverlay extends Overlay {
                 continue;
             }
 
+            if (plugin.getConfig().onlyTagSlayer() && !plugin.isSlayerTarget(npc)) {
+                continue;
+            }
+
             boolean isAggro = plugin.isAggressive(npc);
             if (isAggro) {
                 // Filter out NPCs whose overlay is fully suppressed (crabs, superiors, etc.)

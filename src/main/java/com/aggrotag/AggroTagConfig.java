@@ -33,48 +33,53 @@ public interface AggroTagConfig extends Config {
         return false;
     }
 
-    @ConfigItem(keyName = "preventTagOverlap", name = "Prevent Tag Overlap", description = "When enabled, NPC tags will physically bump into each other and float apart so they don't overlap.", position = 4)
+    @ConfigItem(keyName = "preventTagOverlap", name = "Prevent Tag Overlap", description = "When enabled, NPC tags will physically bump into each other and float apart so they don't overlap.", position = 5)
     default boolean preventTagOverlap() {
         return true;
     }
 
     @Range(min = 0, max = 100)
-    @ConfigItem(keyName = "baseOpacity", name = "Base Tag Opacity %", description = "General opacity for all active tags. 0 = fully invisible, 100 = full brightness. Default 100.", position = 5)
+    @ConfigItem(keyName = "baseOpacity", name = "Base Tag Opacity %", description = "General opacity for all active tags. 0 = fully invisible, 100 = full brightness. Default 100.", position = 6)
     default int baseOpacity() {
         return 100;
     }
 
     @Range(min = -500, max = 500)
-    @ConfigItem(keyName = "tagVerticalOffset", name = "Vertical Position Shift", description = "Shift the entire tag layout up (negative) or down (positive) on your screen.", position = 6)
+    @ConfigItem(keyName = "tagVerticalOffset", name = "Vertical Position Shift", description = "Shift the entire tag layout up (negative) or down (positive) on your screen.", position = 7)
     default int tagVerticalOffset() {
         return 0;
     }
 
     @Range(min = -500, max = 500)
-    @ConfigItem(keyName = "tagHorizontalOffset", name = "Horizontal Position Shift", description = "Shift the entire tag layout left (negative) or right (positive) on your screen.", position = 7)
+    @ConfigItem(keyName = "tagHorizontalOffset", name = "Horizontal Position Shift", description = "Shift the entire tag layout left (negative) or right (positive) on your screen.", position = 8)
     default int tagHorizontalOffset() {
         return 0;
     }
 
-    @ConfigItem(keyName = "dimInSingleCombat", name = "Dim Others in Single Combat", description = "<html>In single-combat zones, when you are already fighting an NPC,<br>all other aggressive NPC tags are dimmed — they cannot attack you<br>while your combat slot is occupied. Tags return to full brightness<br>the moment your target dies. Has no effect in multi-combat areas.</html>", position = 8)
+    @ConfigItem(keyName = "dimInSingleCombat", name = "Dim Others in Single Combat", description = "<html>In single-combat zones, when you are already fighting an NPC,<br>all other aggressive NPC tags are dimmed — they cannot attack you<br>while your combat slot is occupied. Tags return to full brightness<br>the moment your target dies. Has no effect in multi-combat areas.</html>", position = 9)
     default boolean dimInSingleCombat() {
         return true;
     }
 
     @Range(min = 0, max = 100)
-    @ConfigItem(keyName = "dimmedOpacity", name = "Dim In-Combat Tags %", description = "<html>How transparent dimmed (when engaged in single combat) NPC tags appear. <br>0 = fully invisible, 100 = full brightness. Default 25.</html>", position = 9)
+    @ConfigItem(keyName = "dimmedOpacity", name = "Dim In-Combat Tags %", description = "<html>How transparent dimmed (when engaged in single combat) NPC tags appear. <br>0 = fully invisible, 100 = full brightness. Default 25.</html>", position = 10)
     default int dimmedOpacity() {
         return 25;
     }
 
-    @ConfigItem(keyName = "slayerWarnings", name = "Slayer Warnings!", description = "<html>Shows missing slayer equipment icons with a <b><font color='#ff361fff'>RED</font></b> cancel sign<br>on tagged slayer monsters when you are on-task but not wearing<br>the required protection (e.g., Earmuffs for Banshees).</html>", position = 10)
+    @ConfigItem(keyName = "slayerWarnings", name = "Slayer Warnings!", description = "<html>Shows missing slayer equipment icons with a <b><font color='#ff361fff'>RED</font></b> cancel sign<br>on tagged slayer monsters when you are on-task but not wearing<br>the required protection (e.g., Earmuffs for Banshees).</html>", position = 11)
     default boolean slayerWarnings() {
         return true;
     }
 
+    @ConfigItem(keyName = "onlyTagSlayer", name = "Only Tag Slayer", description = "When enabled, ONLY NPCs that are your current Slayer task will be tagged.<br>All other NPCs will be ignored by the plugin.", position = 12)
+    default boolean onlyTagSlayer() {
+        return false;
+    }
+
     // ── SECTIONS ───────────────────────────────────────────────────────────────
 
-    @ConfigSection(name = "Max Hit", description = "Settings for displaying NPC max hits", position = 11, closedByDefault = true)
+    @ConfigSection(name = "Max Hit", description = "Settings for displaying NPC max hits", position = 13, closedByDefault = true)
     String maxHitSection = "maxHitSection";
 
     @ConfigSection(name = "Square Marker", description = "Replace NPC names with a customizable square marker", position = 20, closedByDefault = true)
@@ -114,62 +119,62 @@ public interface AggroTagConfig extends Config {
         return true;
     }
 
-    @ConfigItem(keyName = "maxHitBaseColor", name = "Max Hit Base Color", description = "The default color of the max hit number when 'Color Max Hit by Attack Style' is disabled.", position = 4, section = maxHitSection)
+    @ConfigItem(keyName = "maxHitBaseColor", name = "Max Hit Base Color", description = "The default color of the max hit number when 'Color Max Hit by Attack Style' is disabled.", position = 5, section = maxHitSection)
     default Color maxHitBaseColor() {
         return Color.WHITE;
     }
 
-    @ConfigItem(keyName = "showHpPercent", name = "Show Max Hit as % of HP", description = "<html>Appends the max hit as a percentage of your current Hitpoints, e.g. [15 \u00b7 25%]. <br>Values over 100% mean the NPC can theoretically one-shot you.</html>", position = 5, section = maxHitSection)
+    @ConfigItem(keyName = "showHpPercent", name = "Show Max Hit as % of HP", description = "<html>Appends the max hit as a percentage of your current Hitpoints, e.g. [15 \u00b7 25%]. <br>Values over 100% mean the NPC can theoretically one-shot you.</html>", position = 6, section = maxHitSection)
     default boolean showHpPercent() {
         return false;
     }
 
     @Range(min = 0, max = 5)
-    @ConfigItem(keyName = "hpPercentSizeIncrease", name = "Base HP % Size Increase", description = "Increase the font size of the % number.", position = 6, section = maxHitSection)
+    @ConfigItem(keyName = "hpPercentSizeIncrease", name = "Base HP % Size Increase", description = "Increase the font size of the % number.", position = 7, section = maxHitSection)
     default int hpPercentSizeIncrease() {
         return 0;
     }
 
-    @ConfigItem(keyName = "colorHpNumber", name = "Custom HP # Colors", description = "<html>When enabled, overrides the 'Color Max Hit by Attack Style' coloring<br>and instead colors the max hit number using your threshold colors below.<br>Requires thresholds to be configured.</html>", position = 7, section = maxHitSection)
+    @ConfigItem(keyName = "colorHpNumber", name = "Custom HP # Colors", description = "<html>When enabled, overrides the 'Color Max Hit by Attack Style' coloring<br>and instead colors the max hit number using your threshold colors below.<br>Requires thresholds to be configured.</html>", position = 8, section = maxHitSection)
     default boolean colorHpNumber() {
         return true;
     }
 
-    @ConfigItem(keyName = "colorHpPercent", name = "Custom HP % Colors", description = "Color the % text based on danger level.", position = 8, section = maxHitSection)
+    @ConfigItem(keyName = "colorHpPercent", name = "Custom HP % Colors", description = "Color the % text based on danger level.", position = 9, section = maxHitSection)
     default boolean colorHpPercent() {
         return true;
     }
 
     @Range(min = 0, max = 100)
-    @ConfigItem(keyName = "hpPercentThreshold1", name = "HP % Threshold 1", description = "First threshold for HP percentage coloring (e.g. 50).", position = 9, section = maxHitSection)
+    @ConfigItem(keyName = "hpPercentThreshold1", name = "HP % Threshold 1", description = "First threshold for HP percentage coloring (e.g. 50).", position = 10, section = maxHitSection)
     default int hpPercentThreshold1() {
         return 50;
     }
 
     @Range(min = 0, max = 100)
-    @ConfigItem(keyName = "hpPercentThreshold2", name = "HP % Threshold 2", description = "Second threshold for HP percentage coloring (e.g. 100).", position = 10, section = maxHitSection)
+    @ConfigItem(keyName = "hpPercentThreshold2", name = "HP % Threshold 2", description = "Second threshold for HP percentage coloring (e.g. 100).", position = 11, section = maxHitSection)
     default int hpPercentThreshold2() {
         return 100;
     }
 
-    @ConfigItem(keyName = "colorHpPercent50", name = "Threshold 1 Color", description = "Color when the max hit is > Threshold 1 of your current HP.", position = 11, section = maxHitSection)
+    @ConfigItem(keyName = "colorHpPercent50", name = "Threshold 1 Color", description = "Color when the max hit is > Threshold 1 of your current HP.", position = 12, section = maxHitSection)
     default Color colorHpPercent50() {
         return new Color(39, 232, 163);
     }
 
-    @ConfigItem(keyName = "colorHpPercent100", name = "Threshold 2 Color", description = "Color when the max hit is > Threshold 2 of your current HP.", position = 12, section = maxHitSection)
+    @ConfigItem(keyName = "colorHpPercent100", name = "Threshold 2 Color", description = "Color when the max hit is > Threshold 2 of your current HP.", position = 13, section = maxHitSection)
     default Color colorHpPercent100() {
         return new Color(240, 25, 195);
     }
 
     @Range(min = 0, max = 10)
-    @ConfigItem(keyName = "hpPercentSizeIncrease50", name = "Threshold 1 Size Increase", description = "Additional font size increase when max hit is > Threshold 1.", position = 13, section = maxHitSection)
+    @ConfigItem(keyName = "hpPercentSizeIncrease50", name = "Threshold 1 Size Increase", description = "Additional font size increase when max hit is > Threshold 1.", position = 14, section = maxHitSection)
     default int hpPercentSizeIncrease50() {
         return 4;
     }
 
     @Range(min = 0, max = 10)
-    @ConfigItem(keyName = "hpPercentSizeIncrease100", name = "Threshold 2 Size Increase", description = "Additional font size increase when max hit is > Threshold 2.", position = 14, section = maxHitSection)
+    @ConfigItem(keyName = "hpPercentSizeIncrease100", name = "Threshold 2 Size Increase", description = "Additional font size increase when max hit is > Threshold 2.", position = 15, section = maxHitSection)
     default int hpPercentSizeIncrease100() {
         return 9;
     }

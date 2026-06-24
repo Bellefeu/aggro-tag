@@ -59,6 +59,16 @@ public final class NpcAggroRadius {
         m.put(1543, 3);
 
         // Uniques — 1-tile aggro range
+        // Hobgoblin
+        m.put(3286, 1);
+
+        // Skeleton (Kourend)
+        m.put(10717, 1);
+        m.put(10718, 1);
+        m.put(10719, 1);
+        m.put(10720, 1);
+        m.put(10721, 1);
+
         // Giant Bat
         m.put(2834, 1);
 
@@ -124,6 +134,11 @@ public final class NpcAggroRadius {
         m.put(5087, 3);
         m.put(5088, 3);
         m.put(5089, 3);
+
+        // Dark Warrior (Kourend)
+        m.put(11109, 3);
+        m.put(11110, 3);
+        m.put(11111, 3);
 
         // ── Category 2: Extended Range Constants ─────────────────────────────
         // Dagannoth Kings — 7-tile aggro
@@ -360,6 +375,7 @@ public final class NpcAggroRadius {
         Map<String, Integer> m = new HashMap<>();
 
         // Category 1: Short-range
+        m.put("hobgoblin", 1);
         m.put("wolf", 1);
         m.put("aberrant spectre", 1);
         m.put("deviant spectre", 1);

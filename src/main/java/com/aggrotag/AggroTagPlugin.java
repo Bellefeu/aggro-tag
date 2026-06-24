@@ -161,6 +161,9 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     ));
 
     // ── Edge Case Item Constants ───────────────────────────────────────────────
+    private static final Set<Integer> ENGAGED_LIZARDMAN_IDS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            8563, 8564, 8565, 6914, 6915, 6916, 6917, 6918, 6919, 6766, 6767, 7744, 7745, 10947)));
+
     private static final Set<Integer> GREEGREE_IDS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             4024, 4025, 4026, 4027, 4028, 4029, 4030, 4031, 19525)));
 
@@ -295,21 +298,37 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         return itemManager;
     }
 
+    private int lastCombatCheckCycle = -1;
+    private boolean lastCombatResult = false;
+
     /**
      * Returns true if the local player is currently in combat
      * (interacting with an NPC, or an NPC is interacting with the player).
+     * The result is cached per game cycle to improve performance when called
+     * multiple times per frame by the overlay.
      */
     public boolean isPlayerInCombat() {
         if (client.getLocalPlayer() == null) {
             return false;
         }
+        
+        int currentCycle = client.getGameCycle();
+        if (currentCycle == lastCombatCheckCycle) {
+            return lastCombatResult;
+        }
+
+        lastCombatCheckCycle = currentCycle;
+        lastCombatResult = false;
+
         Actor target = client.getLocalPlayer().getInteracting();
         if (target instanceof NPC && ((NPC) target).getCombatLevel() > 0) {
+            lastCombatResult = true;
             return true;
         }
         if (client.getTopLevelWorldView() != null) {
             for (NPC npc : client.getTopLevelWorldView().npcs()) {
                 if (npc.getCombatLevel() > 0 && npc.getInteracting() == client.getLocalPlayer()) {
+                    lastCombatResult = true;
                     return true;
                 }
             }
@@ -318,6 +337,14 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     }
 
     // ── Public API used by the overlay ────────────────────────────────────────
+
+    public boolean isSlayerTarget(NPC npc) {
+        if (slayerPluginService != null) {
+            java.util.List<NPC> targets = slayerPluginService.getTargets();
+            return targets != null && targets.contains(npc);
+        }
+        return false;
+    }
 
     /**
      * Returns true if this NPC will attack the local player on sight.
@@ -486,7 +513,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
 
         java.util.List<Integer> missingItems = new java.util.ArrayList<>();
         for (SlayerEquipment.SlayerRequirement req : requirements) {
-            if (!isSlayerRequirementMet(req)) {
+            if (!isSlayerRequirementMet(client.getItemContainer(INVENTORY_ID_EQUIPMENT), req)) {
                 missingItems.add(req.displayItemId);
             }
         }
@@ -496,29 +523,29 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     /**
      * Checks whether a single slayer equipment requirement is met by the player.
      */
-    private boolean isSlayerRequirementMet(SlayerEquipment.SlayerRequirement req) {
+    private boolean isSlayerRequirementMet(ItemContainer equipment, SlayerEquipment.SlayerRequirement req) {
         switch (req.checkType) {
             case EQUIPMENT_SLOT:
-                return hasEquipmentInSlot(req.equipmentSlot, req.validItemIds);
+                return hasEquipmentInSlot(equipment, req.equipmentSlot, req.validItemIds);
 
             case INVENTORY:
                 return hasItemInInventory(req.validItemIds);
 
             case EQUIPMENT_OR_INVENTORY:
-                return hasEquipmentInSlot(req.equipmentSlot, req.validItemIds)
+                return hasEquipmentInSlot(equipment, req.equipmentSlot, req.validItemIds)
                         || hasItemInInventory(req.validItemIds);
 
             case ANTIFIRE_OR_SHIELD:
-                return hasEquipmentInSlot(req.equipmentSlot, req.validItemIds)
+                return hasEquipmentInSlot(equipment, req.equipmentSlot, req.validItemIds)
                         || isAntifireActive();
 
             case BOOTS_OR_DIARY:
-                return hasEquipmentInSlot(req.equipmentSlot, req.validItemIds)
+                return hasEquipmentInSlot(equipment, req.equipmentSlot, req.validItemIds)
                         || isKourendEliteDiaryComplete();
 
             case WEAPON_OR_AMMO:
-                return hasEquipmentInSlot(req.equipmentSlot, req.validItemIds)
-                        || hasEquipmentInSlot(EquipmentInventorySlot.AMMO, req.secondaryItemIds);
+                return hasEquipmentInSlot(equipment, req.equipmentSlot, req.validItemIds)
+                        || hasEquipmentInSlot(equipment, EquipmentInventorySlot.AMMO, req.secondaryItemIds);
 
             case ZYGOMITE_SPRAY:
                 return hasZygomiteSpray();
@@ -533,8 +560,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
      * For HEAD slot checks with slayer helmet IDs, also performs a name-based fallback
      * to catch future helmet variants.
      */
-    private boolean hasEquipmentInSlot(EquipmentInventorySlot slot, Set<Integer> validIds) {
-        ItemContainer equipment = client.getItemContainer(INVENTORY_ID_EQUIPMENT);
+    private boolean hasEquipmentInSlot(ItemContainer equipment, EquipmentInventorySlot slot, Set<Integer> validIds) {
         if (equipment == null) {
             return false;
         }
@@ -826,13 +852,9 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
-    private boolean playerHasFactionItem(String faction) {
+    private boolean playerHasFactionItem(ItemContainer equipment, String faction) {
         Set<Integer> factionItems = GwdFactionItems.forFaction(faction);
-        if (factionItems.isEmpty())
-            return false;
-
-        ItemContainer equipment = client.getItemContainer(INVENTORY_ID_EQUIPMENT);
-        if (equipment == null)
+        if (factionItems.isEmpty() || equipment == null)
             return false;
 
         for (Item item : equipment.getItems()) {
@@ -981,8 +1003,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
                 safeName.equals("cave kraken");
     }
 
-    private boolean hasGreegreeEquipped() {
-        ItemContainer equipment = client.getItemContainer(INVENTORY_ID_EQUIPMENT);
+    private boolean hasGreegreeEquipped(ItemContainer equipment) {
         if (equipment == null)
             return false;
 
@@ -990,8 +1011,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         return weapon != null && GREEGREE_IDS.contains(weapon.getId());
     }
 
-    private boolean hasFullVyreNobleEquipped() {
-        ItemContainer equipment = client.getItemContainer(INVENTORY_ID_EQUIPMENT);
+    private boolean hasFullVyreNobleEquipped(ItemContainer equipment) {
         if (equipment == null)
             return false;
 
@@ -1007,8 +1027,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
                 VYRE_NOBLE_SHOES.contains(boots.getId());
     }
 
-    private boolean hasEtherBraceletEquipped() {
-        ItemContainer equipment = client.getItemContainer(INVENTORY_ID_EQUIPMENT);
+    private boolean hasEtherBraceletEquipped(ItemContainer equipment) {
         if (equipment == null)
             return false;
 
@@ -1016,8 +1035,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         return gloves != null && gloves.getId() == BRACELET_OF_ETHEREUM;
     }
 
-    private boolean hasFullMournerEquipped() {
-        ItemContainer equipment = client.getItemContainer(INVENTORY_ID_EQUIPMENT);
+    private boolean hasFullMournerEquipped(ItemContainer equipment) {
         if (equipment == null)
             return false;
 
@@ -1041,6 +1059,13 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     // ── Aggression Evaluation Helpers ─────────────────────────────────────────
 
     private Boolean evaluateOverridesAndDisguises(NPC npc, String safeName) {
+        ItemContainer equipment = client.getItemContainer(INVENTORY_ID_EQUIPMENT);
+        
+        int npcId = npc.getId();
+        if (ENGAGED_LIZARDMAN_IDS.contains(npcId) && npc.getInteracting() != null) {
+            return false;
+        }
+
         if (isTaskOnlyAggressor(safeName)) {
             if (config.slayerTaskIntegration() && slayerPluginService != null) {
                 List<NPC> targets = slayerPluginService.getTargets();
@@ -1054,12 +1079,12 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         }
 
         if (config.trackDesertBandits() && (npc.getId() == 690 || npc.getId() == 695)) {
-            if (playerHasFactionItem("saradomin") || playerHasFactionItem("zamorak"))
+            if (playerHasFactionItem(equipment, "saradomin") || playerHasFactionItem(equipment, "zamorak"))
                 return true;
         }
 
         if (config.trackApeAtoll() && (safeName.contains("monkey") || safeName.contains("gorilla"))) {
-            if (hasGreegreeEquipped())
+            if (hasGreegreeEquipped(equipment))
                 return false;
             if (config.trackTolerance() && hasTolerance())
                 return false;
@@ -1067,7 +1092,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         }
 
         if (config.trackMourners() && safeName.equals("mourner")) {
-            if (hasFullMournerEquipped())
+            if (hasFullMournerEquipped(equipment))
                 return false;
             if (config.trackTolerance() && hasTolerance())
                 return false;
@@ -1075,7 +1100,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         }
 
         if (config.trackVyrewatch() && safeName.contains("vyre")) {
-            if (hasFullVyreNobleEquipped())
+            if (hasFullVyreNobleEquipped(equipment))
                 return false;
             if (config.trackTolerance() && hasTolerance())
                 return false;
@@ -1083,7 +1108,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         }
 
         if (config.trackRevenants() && safeName.contains("revenant")) {
-            if (hasEtherBraceletEquipped())
+            if (hasEtherBraceletEquipped(equipment))
                 return false;
             return true;
         }
@@ -1097,7 +1122,6 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             return true;
         }
 
-        int npcId = npc.getId();
         if (npcId == 955 || npcId == 956 || npcId == 961) {
             if (client.getLocalPlayer() != null && client.getLocalPlayer().getWorldLocation().getRegionID() == 13972) {
                 if (config.trackTolerance() && hasTolerance())
@@ -1126,7 +1150,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
 
             String faction = npcDataLoader.getGwdFaction(id);
             if (faction != null) {
-                if (config.trackGwd() && playerHasFactionItem(faction))
+                if (config.trackGwd() && playerHasFactionItem(client.getItemContainer(INVENTORY_ID_EQUIPMENT), faction))
                     return false;
                 if (config.trackTolerance() && hasTolerance())
                     return false;
