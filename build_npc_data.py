@@ -213,5 +213,24 @@ check(512)
 check(2058)
 check(510)
 check(2057)
-check(2057)
 check(3033)
+
+# Update the date in AggroTagConfig.java
+config_path = "src/main/java/com/aggrotag/AggroTagConfig.java"
+today_str = time.strftime("%Y-%m-%d")
+print(f"\nUpdating NPC Data Version date in AggroTagConfig.java to {today_str}...")
+try:
+    with open(config_path, "r", encoding="utf-8") as f:
+        config_content = f.read()
+    
+    new_content = re.sub(
+        r'(default String npcDataVersion\(\)\s*\{\s*return\s*")[^"]+(";\s*\})',
+        rf'\g<1>{today_str}\g<2>',
+        config_content
+    )
+    
+    with open(config_path, "w", encoding="utf-8") as f:
+        f.write(new_content)
+    print("Successfully updated AggroTagConfig.java")
+except Exception as e:
+    print(f"Failed to update AggroTagConfig.java: {e}")

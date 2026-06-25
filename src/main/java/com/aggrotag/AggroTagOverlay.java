@@ -672,7 +672,7 @@ public class AggroTagOverlay extends Overlay {
         // appends to the right.
         int npcCenterX = shiftedTextX + nameWidth / 2 + plugin.getConfig().tagHorizontalOffset();
         boolean useSquare = plugin.getConfig().useSquareMarker();
-        boolean useOutline = plugin.getConfig().npcOutline();
+        boolean useOutline = (isTargetingPlayer && plugin.getConfig().npcOutlineTargeting()) || (!isTargetingPlayer && plugin.getConfig().npcOutlineAggressive());
         int squareWidth = 0; // Keep track for max hit offset
 
         if (isCombatState && useOutline) {

@@ -215,35 +215,40 @@ public interface AggroTagConfig extends Config {
 
     // ── NPC OUTLINE ────────────────────────────────────────────────────────────
 
-    @ConfigItem(keyName = "npcOutline", name = "Outline Aggressive NPCs", description = "Draw an outline around Aggressive and Targeting-You NPCs.", position = 1, section = npcOutlineSection)
-    default boolean npcOutline() {
+    @ConfigItem(keyName = "npcOutlineAggressive", name = "Outline Aggressive NPCs", description = "Draw an outline around aggressive NPCs that are not currently targeting you.", position = 1, section = npcOutlineSection)
+    default boolean npcOutlineAggressive() {
         return true;
     }
 
-    @ConfigItem(keyName = "npcOutlineAggroColor", name = "Outline Aggro", description = "Color of the outline for NPCs that would attack you on approach.", position = 2, section = npcOutlineSection)
+    @ConfigItem(keyName = "npcOutlineTargeting", name = "Outline Targeting-You NPCs", description = "Draw an outline around NPCs that are actively targeting/chasing you.", position = 2, section = npcOutlineSection)
+    default boolean npcOutlineTargeting() {
+        return true;
+    }
+
+    @ConfigItem(keyName = "npcOutlineAggroColor", name = "Outline Aggro Color", description = "Color of the outline for NPCs that would attack you on approach.", position = 3, section = npcOutlineSection)
     default Color npcOutlineAggroColor() {
         return new Color(255, 60, 60, 230);
     }
 
-    @ConfigItem(keyName = "npcOutlineTargetingYouColor", name = "Outline Targeting-You", description = "Color of the outline when an NPC is actively targeting/chasing you right now.", position = 3, section = npcOutlineSection)
+    @ConfigItem(keyName = "npcOutlineTargetingYouColor", name = "Outline Targeting-You Color", description = "Color of the outline when an NPC is actively targeting/chasing you right now.", position = 4, section = npcOutlineSection)
     default Color npcOutlineTargetingYouColor() {
         return new Color(255, 140, 0, 255);
     }
 
     @Range(min = 1, max = 50)
-    @ConfigItem(keyName = "npcOutlineWidth", name = "Outline Width", description = "Width of the NPC outline.", position = 4, section = npcOutlineSection)
+    @ConfigItem(keyName = "npcOutlineWidth", name = "Outline Width", description = "Width of the NPC outline.", position = 5, section = npcOutlineSection)
     default int npcOutlineWidth() {
         return 1;
     }
 
     @Range(min = 0, max = 50)
-    @ConfigItem(keyName = "npcOutlineFeather", name = "Outline Feather", description = "How much to feather/blur the NPC outline.", position = 5, section = npcOutlineSection)
+    @ConfigItem(keyName = "npcOutlineFeather", name = "Outline Feather", description = "How much to feather/blur the NPC outline.", position = 6, section = npcOutlineSection)
     default int npcOutlineFeather() {
         return 3;
     }
 
     @Range(min = 0, max = 100)
-    @ConfigItem(keyName = "npcOutlineOpacity", name = "Outline Opacity", description = "Adjust the opacity of the NPC outline (0 is fully transparent, 100 is fully opaque).", position = 6, section = npcOutlineSection)
+    @ConfigItem(keyName = "npcOutlineOpacity", name = "Outline Opacity", description = "Adjust the opacity of the NPC outline (0 is fully transparent, 100 is fully opaque).", position = 7, section = npcOutlineSection)
     default int npcOutlineOpacity() {
         return 100;
     }
@@ -343,7 +348,7 @@ public interface AggroTagConfig extends Config {
 
     @ConfigItem(keyName = "npcDataVersion", name = "NPC Data Version", description = "The date npc_data.json was last rebuilt from the OSRS Wiki for aggression and max-hit data.", position = 3, section = npcIdSection)
     default String npcDataVersion() {
-        return "2026-06-20";
+        return "2026-06-24";
     }
 
     // ── EDGE CASES ─────────────────────────────────────────────────────────────
