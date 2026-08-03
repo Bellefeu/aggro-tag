@@ -194,6 +194,10 @@ public class AggroTagOverlay extends Overlay {
                 continue;
             }
 
+            if (plugin.getConfig().onlyTagBosses() && !NpcAggroRadius.isBoss(npc)) {
+                continue;
+            }
+
             boolean isAggro = plugin.isAggressive(npc);
             if (isAggro) {
                 // Filter out NPCs whose overlay is fully suppressed (crabs, superiors, etc.)
@@ -315,8 +319,11 @@ public class AggroTagOverlay extends Overlay {
             return;
         }
 
+        boolean colorByAttackStyle = plugin.getConfig().radiusColorByAttackStyle();
+        Color defaultRadiusColor = plugin.getConfig().radiusColor();
+        java.util.Map<Color, java.awt.geom.Area> colorAreas = new java.util.HashMap<>();
+
         boolean anyRadiusToDraw = false;
-        java.awt.geom.Area masterArea = new java.awt.geom.Area();
 
         for (NPC npc : aggressiveNpcs) {
             boolean showRadius = plugin.isRadiusHotkeyHeld() || (plugin.getConfig().hoverRadius() && isHovering(npc));
@@ -327,6 +334,20 @@ public class AggroTagOverlay extends Overlay {
             // Skip passive or overlay-disabled NPCs
             if (radius <= 0)
                 continue;
+
+            Color npcRadiusColor = defaultRadiusColor;
+            if (colorByAttackStyle) {
+                int style = plugin.getAttackStyleBitmask(npc);
+                if ((style & NpcDataLoader.STYLE_MAGIC) != 0) {
+                    npcRadiusColor = COLOR_MAGIC;
+                } else if ((style & NpcDataLoader.STYLE_RANGED) != 0) {
+                    npcRadiusColor = COLOR_RANGED;
+                } else if ((style & NpcDataLoader.STYLE_MELEE) != 0) {
+                    npcRadiusColor = COLOR_MELEE;
+                }
+            }
+
+            java.awt.geom.Area masterArea = colorAreas.computeIfAbsent(npcRadiusColor, k -> new java.awt.geom.Area());
 
             NPCComposition comp = npc.getTransformedComposition();
             if (comp == null)
@@ -441,8 +462,6 @@ public class AggroTagOverlay extends Overlay {
         }
 
         if (anyRadiusToDraw) {
-            Color tagColor = plugin.getConfig().radiusColor();
-
             int opacity = plugin.getConfig().radiusOpacity();
             // Dim the radius to near-invisible when the player is in combat, fading over 1 sec
             if (plugin.getConfig().dimRadiusInCombat()) {
@@ -450,16 +469,21 @@ public class AggroTagOverlay extends Overlay {
                 opacity = (int) (opacity + (dimOp - opacity) * globalRadiusFade);
             }
             int radiusAlpha = (int) ((opacity / 100.0f) * 255);
-            Color fillColor = new Color(tagColor.getRed(), tagColor.getGreen(), tagColor.getBlue(), radiusAlpha);
-
             int borderAlpha = Math.min(255, (int) (radiusAlpha * 3.5));
-            Color borderColor = new Color(tagColor.getRed(), tagColor.getGreen(), tagColor.getBlue(), borderAlpha);
 
-            graphics.setColor(fillColor);
-            graphics.fill(masterArea);
-            graphics.setColor(borderColor);
-            graphics.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            graphics.draw(masterArea);
+            for (java.util.Map.Entry<Color, java.awt.geom.Area> entry : colorAreas.entrySet()) {
+                Color tagColor = entry.getKey();
+                java.awt.geom.Area masterArea = entry.getValue();
+
+                Color fillColor = new Color(tagColor.getRed(), tagColor.getGreen(), tagColor.getBlue(), radiusAlpha);
+                Color borderColor = new Color(tagColor.getRed(), tagColor.getGreen(), tagColor.getBlue(), borderAlpha);
+
+                graphics.setColor(fillColor);
+                graphics.fill(masterArea);
+                graphics.setColor(borderColor);
+                graphics.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                graphics.draw(masterArea);
+            }
         }
     }
 

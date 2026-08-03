@@ -77,9 +77,14 @@ public interface AggroTagConfig extends Config {
         return false;
     }
 
+    @ConfigItem(keyName = "onlyTagBosses", name = "Only Tag Bosses", description = "When enabled, ONLY bosses will be tagged.<br>All other NPCs will be ignored by the plugin.", position = 13)
+    default boolean onlyTagBosses() {
+        return false;
+    }
+
     // ── SECTIONS ───────────────────────────────────────────────────────────────
 
-    @ConfigSection(name = "Max Hit", description = "Settings for displaying NPC max hits", position = 13, closedByDefault = true)
+    @ConfigSection(name = "Max Hit", description = "Settings for displaying NPC max hits", position = 14, closedByDefault = true)
     String maxHitSection = "maxHitSection";
 
     @ConfigSection(name = "Square Marker", description = "Replace NPC names with a customizable square marker", position = 20, closedByDefault = true)
@@ -291,39 +296,44 @@ public interface AggroTagConfig extends Config {
         return new Color(124, 12, 12);
     }
 
+    @ConfigItem(keyName = "radiusColorByAttackStyle", name = "Color by Attack Style", description = "When enabled, overwrites the radius color with the color of the attack style (melee=yellow, ranged=green, magic=blue).", position = 7, section = radiusSection)
+    default boolean radiusColorByAttackStyle() {
+        return false;
+    }
+
     @Range(min = 0, max = 100)
-    @ConfigItem(keyName = "radiusOpacity", name = "Radius Opacity", description = "Adjust the opacity of the aggression radius (0 is fully transparent, 100 is fully opaque).", position = 7, section = radiusSection)
+    @ConfigItem(keyName = "radiusOpacity", name = "Radius Opacity", description = "Adjust the opacity of the aggression radius (0 is fully transparent, 100 is fully opaque).", position = 8, section = radiusSection)
     default int radiusOpacity() {
         return 8;
     }
 
-    @ConfigItem(keyName = "dimRadiusInCombat", name = "Dim Radius While in Combat", description = "<html>When enabled, the aggression radius fades to near-invisible<br>while you are actively in combat, then returns to full opacity<br>when combat ends. Reduces visual clutter during fights.</html>", position = 8, section = radiusSection)
+    @ConfigItem(keyName = "dimRadiusInCombat", name = "Dim Radius While in Combat", description = "<html>When enabled, the aggression radius fades to near-invisible<br>while you are actively in combat, then returns to full opacity<br>when combat ends. Reduces visual clutter during fights.</html>", position = 9, section = radiusSection)
     default boolean dimRadiusInCombat() {
         return true;
     }
 
     @Range(min = 0, max = 100)
-    @ConfigItem(keyName = "dimmedRadiusOpacity", name = "Dimmed Radius Opacity %", description = "The opacity the aggression radius fades to while in combat (0 = invisible, 100 = full). Only used when 'Dim Radius While in Combat' is enabled.", position = 9, section = radiusSection)
+    @ConfigItem(keyName = "dimmedRadiusOpacity", name = "Dimmed Radius Opacity %", description = "The opacity the aggression radius fades to while in combat (0 = invisible, 100 = full). Only used when 'Dim Radius While in Combat' is enabled.", position = 10, section = radiusSection)
     default int dimmedRadiusOpacity() {
         return 4;
     }
 
-    @ConfigItem(keyName = "radiusLineOfSight", name = "Line of Sight (LOS) Radius", description = "<html>Dynamically shapes the radius to only show tiles the NPC can actually see,<br>blocking it behind walls/objects.<br><br><b><font color='#ff361fff'>Warning:</font></b> Checking LOS tile-by-tile can impact FPS if many NPCs are on screen.</html>", position = 10, section = radiusSection)
+    @ConfigItem(keyName = "radiusLineOfSight", name = "Line of Sight (LOS) Radius", description = "<html>Dynamically shapes the radius to only show tiles the NPC can actually see,<br>blocking it behind walls/objects.<br><br><b><font color='#ff361fff'>Warning:</font></b> Checking LOS tile-by-tile can impact FPS if many NPCs are on screen.</html>", position = 11, section = radiusSection)
     default boolean radiusLineOfSight() {
         return true;
     }
 
-    @ConfigItem(keyName = "radiusTrueTile", name = "Snap to True Tile", description = "<html>Snaps the aggression radius to the server's strict grid (True Tile) <br>rather than gliding smoothly with the NPC's animation.</html>", position = 11, section = radiusSection)
+    @ConfigItem(keyName = "radiusTrueTile", name = "Snap to True Tile", description = "<html>Snaps the aggression radius to the server's strict grid (True Tile) <br>rather than gliding smoothly with the NPC's animation.</html>", position = 12, section = radiusSection)
     default boolean radiusTrueTile() {
         return true;
     }
 
-    @ConfigItem(keyName = "highlightSouthwestTile", name = "Highlight Southwest Tile", description = "Highlights the Southwest tile of the NPC, which is the tile used to calculate its aggression.", position = 12, section = radiusSection)
+    @ConfigItem(keyName = "highlightSouthwestTile", name = "Highlight Southwest Tile", description = "Highlights the Southwest tile of the NPC, which is the tile used to calculate its aggression.", position = 13, section = radiusSection)
     default boolean highlightSouthwestTile() {
         return false;
     }
 
-    @ConfigItem(keyName = "southwestTileColor", name = "Southwest Tile Color", description = "The color used to highlight the Southwest tile of the NPC.", position = 13, section = radiusSection)
+    @ConfigItem(keyName = "southwestTileColor", name = "Southwest Tile Color", description = "The color used to highlight the Southwest tile of the NPC.", position = 14, section = radiusSection)
     default Color southwestTileColor() {
         return new Color(94, 216, 168, 255);
     }
@@ -348,7 +358,7 @@ public interface AggroTagConfig extends Config {
 
     @ConfigItem(keyName = "npcDataVersion", name = "NPC Data Version", description = "The date npc_data.json was last rebuilt from the OSRS Wiki for aggression and max-hit data.", position = 3, section = npcIdSection)
     default String npcDataVersion() {
-        return "2026-06-24";
+        return "2026-08-02";
     }
 
     // ── EDGE CASES ─────────────────────────────────────────────────────────────

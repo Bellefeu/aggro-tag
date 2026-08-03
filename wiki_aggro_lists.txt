@@ -25,6 +25,7 @@ Alchemical Hydra: 8615, 8616, 8617, 8618, 8619, 8620, 8621, 8622
 Ammonite Crab: 7799
 Amoxliatl: 13685, 13686
 Ancient Custodian: 14520
+Ancient feral vyre: 15760, 16229, 16230, 16231, 16232
 Ancient Guardian: 10654, 10665, 12336, 12337
 Ancient Wizard: 7307, 7308, 7309
 Ancient Wyvern: 7795
@@ -45,7 +46,7 @@ Animated steel armour: 6438
 Ankou: 2514, 2515, 2516, 2517, 2518, 2519, 6608, 7257, 7864
 Apparition: 4195, 4196, 4197, 4198
 Araxxor: 13668
-Araxyte: 11175, 11176, 13666, 13667
+Araxyte (task-only): 11175, 11176, 13666, 13667
 Arcane Scarab: 11726
 Arianwyn: 8865, 9248
 Arianwyn (hard): 9246
@@ -148,6 +149,7 @@ Cave crawler (icy): 13800, 13801
 Cave horror: 1047, 1048, 1049, 1050, 1051
 Cave lizard: 7424
 Cerberus: 5862, 5863, 5866, 13657
+Cerberus (Echo): 15612
 Champion of Scabaras: 11482, 11483
 Chaos druid: 520
 Chaos druid warrior: 532
@@ -205,9 +207,12 @@ Dagannoth (Waterbirth Island): 2259, 3185, 5942, 5943
 Dagannoth mother: 980, 981, 982, 983, 984, 985, 986, 987, 988, 6361, 6362, 6363, 6364, 6365, 6366
 Dagannoth mother (hard): 6300, 6301, 6302, 6303, 6304, 6305
 Dagannoth Prime: 2266, 6497, 12442
+Dagannoth Prime (Echo): 15619
 Dagannoth Rex: 2267, 6498, 12439
+Dagannoth Rex (Echo): 15620
 Dagannoth spawn: 3184
 Dagannoth Supreme: 2265, 6496, 12441
+Dagannoth Supreme (Echo): 15618
 Damien Leucurte: 9561, 9562, 9563, 9564
 Damis: 682, 683, 6346, 6347
 Damis (hard): 1134, 1135
@@ -234,6 +239,7 @@ Dessous (hard): 1128
 Deviant spectre: 7279
 Dharok the Wretched: 1673, 12447
 Dinky the drink troll: 15171
+Dire bat: 15757
 Dire Wolf: 3426, 9181, 13812, 13813
 Don't Know What: 8439
 Doom of Mokhaiotl: 14707
@@ -408,6 +414,7 @@ Ice wolf: 645, 646, 647, 710, 711, 712, 713, 714, 715
 Icefiend: 3140
 Icelord: 852, 853, 854, 855
 Imp Champion: 3355
+Impaler deer: 15759
 Iorwerth Archer: 3428, 8760
 Iron dragon: 272, 273, 7254, 8080
 Ithoi the Navigator: 7964
@@ -442,6 +449,7 @@ Juvenile custodian stalker: 14702
 K'ril Tsutsaroth: 3129, 6495, 12446
 Kalphite Guardian: 959, 960, 962
 Kalphite Queen: 963, 965, 4303, 4304, 6500, 6501
+Kalphite Queen (Echo): 15616, 15617
 Kalphite Soldier: 138, 957, 958
 Kalrag: 8993
 Kamil: 3458, 6345
@@ -495,7 +503,9 @@ Lobstrosity: 7796
 Locust: 11584, 11585
 Locust rider: 795, 796, 800, 801
 Long-tailed Wyvern: 7792
+Lowerniel Drakan: 16204
 Lucius: 14363
+Maggot King: 15742
 Magic axe: 2844, 7269
 Magic Mark: 13663
 Malevolent Mage: 12456
@@ -653,6 +663,7 @@ Sand Snake: 7895, 7903
 Sand Snake (hard): 7894
 Sandy Boulder: 7267
 Sandy rocks: 5936, 7207
+Sanguidae: 15756, 16223, 16224, 16225
 Sarachnis: 8713
 Saradomin priest: 2209
 Saradomin wizard: 2955
@@ -867,6 +878,7 @@ Wall beast: 476
 Wallasalki: 5938, 5939
 Warped Terrorbird: 12491, 12492, 12493, 12494, 12495, 12496, 12497, 12498, 12499, 12500, 12501, 12502, 12503, 12504
 Waterfiend: 2916, 2917
+Webbed-winged Crow: 16226
 Werewolf: 3135, 3136
 White golem: 4743
 White jaguar: 12979
@@ -882,6 +894,7 @@ Witch's experiment (second form) (hard): 6334
 Witch's experiment (third form): 3998, 6396
 Witch's experiment (third form) (hard): 6335
 Wolf: 106, 110, 3912
+Wyrd: 16212
 Xamphur: 10953, 10954, 10955, 10956
 Xarpus: 8340, 10768, 10772
 Yama: 14176, 15555
@@ -915,7 +928,6 @@ Abyssal Sire: 5886, 5887, 5888, 5889, 5890, 5891, 5908
 Air elemental: 1369
 Air wizard: 1559
 Akkha's Shadow: 11797, 11798, 11799
-Al Kharid warrior: 3292
 Albatross: 15224
 Alexis: 2623
 Alrik: 3676
@@ -932,8 +944,6 @@ Archer (Ardougne): 3301
 Archer (Burthorpe): 4096, 4097, 4098
 Baby Roc: 762
 Baby tanglefoot: 5853, 5854
-Bandit: 690, 695
-Bandit (no beard): 734, 735, 736, 737
 Barbarian: 3055, 3056, 3057, 3058, 3059, 3060, 3061, 3062, 3064, 3065, 3066, 3067, 3068, 3069, 3070, 3071, 3072, 3262, 10984, 10985, 10986, 10987, 10988
 Basilisk: 417, 418, 9283, 9284, 9285, 9286
 Bat: 2827, 10888, 14042
@@ -953,6 +963,7 @@ Black Knight Titan: 4067
 Black unicorn Foal: 3911
 Blessed giant rat: 4534, 4535
 Blood spawn: 8367, 10821, 10829
+Blood-starved venator: 15770
 Bloodthirst rockslug: 12561
 Bloodthirsty abomination: 12572
 Bloodthirsty abyssal demon: 12581
@@ -1069,7 +1080,6 @@ Evil Chicken (hard): 6306
 Evil Creature: 1241, 1244, 1247, 1250, 1253, 1256
 Experiment: 1273, 1274, 1275
 Experiment No.2: 5126
-Farmer: 3114, 3243, 3244, 11918, 11919, 11920, 11921
 Fever spider: 626
 Fire elemental: 1365
 Fire wizard: 1556
@@ -1100,7 +1110,7 @@ Giant mosquito: 1041, 15440
 Giant rat: 3313, 3314, 3315, 9483
 Giant rockslug: 7392
 Giant wasp: 15438, 15439
-Gnome: 5968, 5969, 5970, 6094, 6095, 6096
+Gnome: 5969, 6094, 6095, 6096
 Gnome Child: 6077, 6078, 6079
 Gnome guard: 6081, 6082
 Gnome troop: 4973, 4974, 5966, 5967
@@ -1118,7 +1128,7 @@ Greater Nechryael: 7278, 11240
 Grip: 4919
 Grizzly bear cub: 3424, 3425
 Gryphon: 14857, 14858
-Guard: 397, 398, 399, 400, 1546, 1547, 1548, 1549, 1550, 3254, 3269, 3270, 3271, 3273, 3274, 3283, 4522, 4523, 4524, 4525, 4526, 5418, 11911, 11912, 11913, 11914, 11915, 11916, 11917, 11922, 11923, 11924, 11937, 11938, 11939, 11942, 11943, 11944, 11945, 11946, 11947, 13100, 13101, 13102, 13103, 13104, 13105, 13106, 13107, 13108, 13109, 13986, 13987, 13988, 13989, 13990, 13991, 13992, 13993, 13994, 13995, 14663, 14664, 14665, 14666, 14667, 14668, 14669, 14670, 14716, 14717, 14718, 14719, 14720, 14721, 14722, 14723
+Guard: 397, 398, 399, 400, 1546, 1547, 1548, 1549, 1550, 3254, 3269, 3270, 3271, 3273, 3274, 3283, 4522, 4523, 4524, 4525, 4526, 11911, 11912, 11913, 11914, 11915, 11916, 11917, 11922, 11923, 11924, 11942, 11943, 11944, 11945, 11946, 11947, 13100, 13101, 13102, 13103, 13104, 13105, 13106, 13107, 13108, 13109, 13986, 13987, 13988, 13989, 13990, 13991, 13992, 13993, 13994, 13995, 14663, 14664, 14665, 14666, 14667, 14668, 14669, 14670, 14716, 14717, 14718, 14719, 14720, 14721, 14722, 14723
 Guard (Burthorpe): 4099, 4100
 Guard (Cave goblin): 2316, 2317
 Guard (dwarf): 5185, 5186, 5187, 5188, 5189
@@ -1133,7 +1143,6 @@ Head Guard: 11093, 11095, 11097, 11099, 11101, 11103, 11105, 11107
 Head Thief: 4248
 Hengel: 3284
 Hermit crab: 14852, 14853, 14854, 14855, 14856
-Hero: 3295, 11934, 11935
 Hoop Snake: 7802
 Hygd: 4110
 Ice demon: 7584, 7585
@@ -1166,7 +1175,7 @@ Khazard commander: 4972
 Khazard Guard: 1208, 1211, 12019, 12020, 12021, 12022, 12023, 12024
 Khazard trooper: 4969, 4970, 5964, 5965
 Killerwatt: 469, 470
-Knight of Ardougne: 3297, 8851, 8852, 8854, 11902, 11936
+Knight of Ardougne: 3297, 8851, 8852, 11936
 Knight of Varlamore: 13114, 13115, 13116, 13117, 13118, 13119
 Kob: 7106, 7107
 Kourend Guard: 11092, 11094, 11096, 11098, 11100, 11102, 11104, 11106
@@ -1181,15 +1190,16 @@ Lost barbarian: 2921
 Lucien: 3443
 Lynx: 11068, 11069
 Lynx Tamer: 11071
+Mad Angel: 16305, 16309, 16314, 16315
 Magma strykewyrm: 15504
 Malevolent Mage: 7396
-Man: 3014, 3106, 3107, 3108, 3109, 3110, 3261, 3264, 3265, 3298, 3652, 6815, 6818, 6987, 6988, 6989, 11057, 11058, 14920
+Man: 3298
 Man (level 4): 1118, 1138
 Manta ray: 15220
 Marble gargoyle: 7407, 7408
 Market Guard: 3949
 Market Guard (Draynor): 2120, 5732
-Menaphite Thug: 3549, 3550
+Maxilla beast: 16233
 Mercenary Captain: 4635
 Mercenary mage: 13537
 Milla: 2624
@@ -1231,14 +1241,14 @@ Oryx: 13006
 Osprey: 15222
 Otherworldly being|location=[[Zanaris]]|levels=64|members=y|mapID=28|plane=0|mtype=pin|leagueRegion=General}}: 2843
 Outlaw: 4167, 4168, 4169, 4170, 4171, 4172, 4173, 4174, 4175, 4176
-Paladin: 3293, 3294, 8849, 8850, 8853, 11901, 11930, 11931, 11932, 11933
+Paladin: 3293, 8849, 8850, 8853, 11901, 11930, 11931, 11932, 11933
 Palmer: 3869
 Passionate Supporter: 12833
 Penance Runner: 1669, 5748, 5749, 5750, 5751, 5752, 5753, 5754, 5755, 5756
 Penda: 4109
 Penguin (monster): 2063
 Pheasant: 373, 374, 5500, 5502
-Pirate: 521, 522, 524, 1447, 6993, 6994, 6995, 14933, 14934, 14935, 14936, 14937
+Pirate: 521, 522, 524, 1447, 6993, 6994, 6995
 Pirate Guard: 4926
 Poltenip: 4758
 Porazdir: 7515, 7860
@@ -1259,7 +1269,7 @@ Rat: 2492, 2513, 2854, 2855
 Repugnant spectre: 7403
 Respiratory system: 5914
 Rockslug: 421, 422, 14423
-Rogue: 526, 6603
+Rocky: 526, 690, 695, 734, 735, 736, 737, 2161, 2162, 2163, 2164, 2165, 2166, 3014, 3015, 3106, 3107, 3108, 3109, 3110, 3111, 3112, 3113, 3114, 3243, 3244, 3260, 3261, 3264, 3265, 3292, 3294, 3295, 3549, 3550, 3652, 5418, 5420, 5968, 5970, 6603, 6815, 6818, 6987, 6988, 6989, 6990, 6991, 6992, 7682, 7683, 7684, 7685, 7686, 7687, 8854, 10728, 11053, 11054, 11057, 11058, 11902, 11918, 11919, 11920, 11921, 11925, 11926, 11927, 11928, 11929, 11934, 11935, 11937, 11938, 11939, 14920, 14921, 14933, 14934, 14935, 14936, 14937
 Rooster: 1175, 3663
 Rubble: 10690, 10692, 10694, 10696
 Runite Golem: 6600
@@ -1342,7 +1352,6 @@ Troll spectator: 4123, 4124, 4125, 4126, 4127, 4128, 4129
 Turoth: 427, 428, 429, 430
 Twig: 4131, 4133
 Tyras guard: 639, 1327, 3433, 3434, 3436, 8945, 8961, 8962, 8963, 8964
-TzHaar-Hur: 2161, 2162, 2163, 2164, 2165, 2166, 7682, 7683, 7684, 7685, 7686, 7687
 TzHaar-Ket: 2173, 2174, 2175, 2176, 2177, 2178, 2179, 2187, 7679
 TzHaar-Mej (monster): 2154, 2155, 2156, 2157, 2158, 2159, 2160
 TzHaar-Xil (Melee): 2167, 2168, 2169, 2170, 2171, 2172
@@ -1352,9 +1361,11 @@ Undead one: 5346, 5347, 5348
 Ungadulu: 3957, 3958
 Unicorn: 2837, 14043
 Unicorn Foal: 3910
+Ur-maggot larvae: 15743
 Valgerd: 3683
 Vampyre Juvenile: 3692, 3693, 3696, 3697, 4436, 4437, 4438, 4439, 9731, 9732, 9733, 9734
 Vardorvis: 12223, 12224, 12228, 12425, 12426
+Venator: 15765, 15766, 15767, 15768, 15769
 Vera: 2630
 Verzik Vitur: 8369, 8370, 8371, 10830, 10831, 10832, 10847, 10848, 10849
 Vespula: 7530, 7531, 7532
@@ -1368,9 +1379,7 @@ Vorkath: 8058, 8059, 8060, 8061
 Vulture: 1267, 1268
 Warped Jelly: 7277
 Warped Tortoise: 12490
-Warrior: 3260, 11925, 11926, 11927, 11928, 11929
 Warrior (Rellekka): 3950
-Watchman: 5420
 Water elemental: 1370
 Water wizard: 1557
 Weaponsmaster: 14137
@@ -1382,11 +1391,11 @@ Wilson: 3865
 Witch: 514, 515
 Wizard: 3257
 Wolf: 2490, 2491, 10522, 10533
-Woman: 3015, 3111, 3112, 3113, 3268, 3299, 6990, 6991, 6992, 10728, 11053, 11054, 14921
+Woman: 3268, 3299
 Woman (West Ardougne): 1119, 1130, 1131, 1139, 1140, 1141, 1142
 Wormbrain: 820
 Wyrm: 8610, 8611
-Wyrmling: 13031, 13032
+Wyrmling: 13031, 13032, 16296, 16297
 Yadviga: 2628
 Yak: 5816
 Yeti: 2847

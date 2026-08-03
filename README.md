@@ -149,8 +149,14 @@ aggro-tag/
 
 `npc_data.json` is built from the OSRS Wiki's Infobox Monster templates. To regenerate it after a game update (or as frequently as you would like), ensure you have Python locally installed, then run the following command in your terminal:
 
+On Windows:
 ```bash
 python build_npc_data.py
+```
+
+Or, on macOS/Linux:
+```bash
+python3 build_npc_data.py
 ```
 
 This fetches the data from the Wiki API, parses it, and automatically writes the final output to `src/main/resources/com/aggrotag/npc_data.json`.

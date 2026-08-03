@@ -497,7 +497,7 @@ public final class NpcAggroRadius {
         m.put("araxyte", -1);
         m.put("scurrius", -1);
         m.put("the hueycoatl", -1);
-        m.put("the amoxliatl", -1);
+        m.put("amoxliatl", -1);
         m.put("manticore", -1);
         m.put("minotaur", -1);
         m.put("serpent shaman", -1);
@@ -539,6 +539,57 @@ public final class NpcAggroRadius {
         m.put("frost crab", -1);
         m.put("hermit crab", -1);
 
+        // ── Hiscores-tracked bosses ──────────────────────────────────────────
+        m.put("king black dragon", -1);
+        m.put("bryophyta", -1);
+        m.put("obor", -1);
+        m.put("brutus", -1);
+        m.put("the mimic", -1);
+        m.put("deranged archaeologist", -1);
+        m.put("doom of mokhaiotl", -1);
+        m.put("yama", -1);
+        m.put("shellbane gryphon", -1);
+        m.put("maggot king", -1);
+        m.put("mad angel", -1);
+        m.put("gemstone crab", -1);
+
+        // Skilling bosses
+        m.put("tempoross", -1);
+        m.put("wintertodt", -1);
+        m.put("zalcano", -1);
+
+        // ── Raid bosses (Chambers of Xeric) ─────────────────────────────────
+        m.put("great olm", -1);
+        m.put("tekton", -1);
+        m.put("vasa nistirio", -1);
+        m.put("muttadile", -1);
+        m.put("vespula", -1);
+        m.put("ice demon", -1);
+
+        // ── Raid bosses (Theatre of Blood) ──────────────────────────────────
+        m.put("the maiden of sugadinti", -1);
+        m.put("pestilent bloat", -1);
+        m.put("nylocas vasilias", -1);
+        m.put("sotetseg", -1);
+        m.put("xarpus", -1);
+        m.put("verzik vitur", -1);
+
+        // ── Raid bosses (Tombs of Amascut) ──────────────────────────────────
+        m.put("akkha", -1);
+        m.put("ba-ba", -1);
+        m.put("kephri", -1);
+        m.put("zebak", -1);
+        m.put("elidinis' warden", -1);
+        m.put("tumeken's warden", -1);
+
+        // ── Quest / other bosses ─────────────────────────────────────────────
+        m.put("lowerniel drakan", -1);
+        m.put("eldric the ice king", -1);
+        m.put("branda the fire queen", -1);
+        m.put("augur metzli", -1);
+        m.put("prince itzla arkan", -1);
+        m.put("fragment of seren", -1);
+
         // Treasure Trail Wizards
         m.put("saradomin wizard", -1);
         m.put("zamorak wizard", -1);
@@ -550,12 +601,128 @@ public final class NpcAggroRadius {
     // These NPCs ignore the 10-minute tolerance timer entirely.
 
     private static final Set<String> PERMANENTLY_AGGRESSIVE_NAMES;
+    private static final Set<String> BOSS_NAMES;
 
     static {
         Set<String> s = new HashSet<>();
         s.add("dark beast");
         s.add("flesh crawler");
         PERMANENTLY_AGGRESSIVE_NAMES = Collections.unmodifiableSet(s);
+
+        Set<String> b = new HashSet<>();
+        // Wildy Bosses
+        b.add("callisto");
+        b.add("artio");
+        b.add("venenatis");
+        b.add("spindel");
+        b.add("vet'ion");
+        b.add("calvar'ion");
+        b.add("scorpia");
+        b.add("chaos elemental");
+        b.add("chaos fanatic");
+        b.add("crazy archaeologist");
+        // Dagannoth Kings
+        b.add("dagannoth prime");
+        b.add("dagannoth supreme");
+        b.add("dagannoth rex");
+        // Slayer Bosses
+        b.add("abyssal sire");
+        b.add("kraken");
+        b.add("cerberus");
+        b.add("thermonuclear smoke devil");
+        b.add("alchemical hydra");
+        b.add("grotesque guardians");
+        b.add("dawn");
+        b.add("dusk");
+        // GWD Bosses
+        b.add("commander zilyana");
+        b.add("kree'arra");
+        b.add("general graardor");
+        b.add("k'ril tsutsaroth");
+        b.add("nex");
+        // Skilling Bosses
+        b.add("tempoross");
+        b.add("wintertodt");
+        b.add("zalcano");
+        // Raids
+        b.add("great olm");
+        b.add("tekton");
+        b.add("vasa nistirio");
+        b.add("muttadile");
+        b.add("vespula");
+        b.add("ice demon");
+        b.add("the maiden of sugadinti");
+        b.add("pestilent bloat");
+        b.add("nylocas vasilias");
+        b.add("sotetseg");
+        b.add("xarpus");
+        b.add("verzik vitur");
+        b.add("akkha");
+        b.add("ba-ba");
+        b.add("kephri");
+        b.add("zebak");
+        b.add("elidinis' warden");
+        b.add("tumeken's warden");
+        // Other Bosses
+        b.add("corporeal beast");
+        b.add("kalphite queen");
+        b.add("sarachnis");
+        b.add("zulrah");
+        b.add("vorkath");
+        b.add("skotizo");
+        b.add("phantom muspah");
+        b.add("the nightmare");
+        b.add("phosani's nightmare");
+        b.add("tztok-jad");
+        b.add("tzkal-zuk");
+        b.add("demonic gorilla");
+        b.add("hespori");
+        b.add("giant mole");
+        b.add("vardorvis");
+        b.add("duke sucellus");
+        b.add("the leviathan");
+        b.add("the whisperer");
+        b.add("araxxor");
+        b.add("scurrius");
+        b.add("the hueycoatl");
+        b.add("amoxliatl");
+        b.add("sol heredit");
+        b.add("blood moon");
+        b.add("eclipse moon");
+        b.add("blue moon");
+        b.add("manticore");
+        b.add("minotaur");
+        b.add("serpent shaman");
+        b.add("shockwave colossus");
+        b.add("javelin colossus");
+        b.add("king black dragon");
+        b.add("bryophyta");
+        b.add("obor");
+        b.add("brutus");
+        b.add("the mimic");
+        b.add("doom of mokhaiotl");
+        b.add("yama");
+        b.add("shellbane gryphon");
+        b.add("maggot king");
+        b.add("mad angel");
+        b.add("gemstone crab");
+        b.add("lowerniel drakan");
+        b.add("eldric the ice king");
+        b.add("branda the fire queen");
+        b.add("augur metzli");
+        b.add("prince itzla arkan");
+        b.add("fragment of seren");
+        b.add("ahrim the blighted");
+        b.add("dharok the wretched");
+        b.add("guthan the infested");
+        b.add("karil the tainted");
+        b.add("torag the corrupted");
+        b.add("verac the defiled");
+        b.add("crystalline hunllef");
+        b.add("corrupted hunllef");
+        b.add("revenant maledictus");
+        b.add("deranged archaeologist");
+        BOSS_NAMES = Collections.unmodifiableSet(b);
     }
 
     // ── PUBLIC API ───────────────────────────────────────────────────────────
@@ -611,5 +778,16 @@ public final class NpcAggroRadius {
         }
         String safeName = Text.removeTags(npc.getName()).toLowerCase();
         return PERMANENTLY_AGGRESSIVE_NAMES.contains(safeName);
+    }
+
+    /**
+     * Returns true if this NPC is a boss.
+     */
+    public static boolean isBoss(NPC npc) {
+        if (npc == null || npc.getName() == null) {
+            return false;
+        }
+        String safeName = Text.removeTags(npc.getName()).toLowerCase();
+        return BOSS_NAMES.contains(safeName);
     }
 }

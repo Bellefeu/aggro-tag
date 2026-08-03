@@ -318,9 +318,15 @@ public final class SlayerEquipment {
         // Warped creatures — TWO requirements (both must be met):
         //   1. Crystal chime in inventory
         //   2. Earmuffs or Slayer helmet on head
-        list.add(new SlayerRequirement("warped", 28577, CheckType.INVENTORY,
+        // Note: Match specific warped creature NPCs (terrorbird, tortoise) to
+        //       avoid false positives on Warped Jellies, which have no requirements.
+        list.add(new SlayerRequirement("warped terrorbird", 28577, CheckType.INVENTORY,
                 null, setOf(28577)));
-        list.add(new SlayerRequirement("warped", 4166, CheckType.EQUIPMENT_SLOT,
+        list.add(new SlayerRequirement("warped terrorbird", 4166, CheckType.EQUIPMENT_SLOT,
+                EquipmentInventorySlot.HEAD, headItemWithHelmet(4166)));
+        list.add(new SlayerRequirement("warped tortoise", 28577, CheckType.INVENTORY,
+                null, setOf(28577)));
+        list.add(new SlayerRequirement("warped tortoise", 4166, CheckType.EQUIPMENT_SLOT,
                 EquipmentInventorySlot.HEAD, headItemWithHelmet(4166)));
 
         // Wyrms — Heat-protection boots or Kourend Elite diary
@@ -344,6 +350,11 @@ public final class SlayerEquipment {
      * @return A list of matching requirements (may be empty, or multiple for Warped Creatures).
      */
     public static List<SlayerRequirement> getRequirements(String npcSafeName) {
+        // Baby dragons don't breathe fire and require no anti-fire protection
+        if (npcSafeName.startsWith("baby")) {
+            return Collections.emptyList();
+        }
+
         List<SlayerRequirement> matches = new ArrayList<>();
         for (SlayerRequirement req : REQUIREMENTS) {
             if (npcSafeName.contains(req.npcNameMatch)) {
