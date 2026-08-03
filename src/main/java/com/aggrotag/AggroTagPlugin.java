@@ -471,7 +471,15 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
      * Only active when auto-radius mode is enabled.
      */
     public boolean shouldDisableOverlay(NPC npc) {
-        return config.autoRadius() && NpcAggroRadius.shouldDisableOverlay(npc);
+        if (!config.autoRadius()) {
+            return false;
+        }
+
+        if (config.trackBosses() && NpcAggroRadius.isBoss(npc)) {
+            return false;
+        }
+
+        return NpcAggroRadius.shouldDisableOverlay(npc);
     }
 
     // ── Slayer Warnings ───────────────────────────────────────────────────────

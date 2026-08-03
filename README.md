@@ -117,6 +117,7 @@ All options are in the RuneLite config panel under **Aggro Tag**.
 | Minigames | Disable | Controls behaviour in Inferno, NMZ, Raids, Colosseum, etc. |
 | God Wars Dungeon | On | Suppresses faction tags when wearing appropriate god items |
 | Disguise Tracking | On | Tracks Ape Atoll, Desert Bandits, Darkmeyer Vyres, Wilderness Revenants, and Mourners |
+| Bosses | Off | Tracks Bosses |
 | Goading Potion | On | Displays an aggro radius on attackable NPCs when under the effect of a Goading Potion |
 
 ---

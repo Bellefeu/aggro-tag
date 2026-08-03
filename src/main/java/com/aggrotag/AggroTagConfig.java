@@ -398,7 +398,10 @@ public interface AggroTagConfig extends Config {
         return true;
     }
 
-    @ConfigItem(keyName = "trackGoadingPotion", name = "Goading Potion", description = "<html>Displays a 9x9 (4-tile) aggro radius on all attackable NPCs when under the effect of a Goading Potion.<br>Automatically syncs with the game's chat messages.</html>", position = 10, section = edgeCasesSection)
+    @ConfigItem(keyName = "trackBosses", name = "Bosses", description = "Tag boss NPCs with aggression info", position = 10, section = edgeCasesSection)
+    default boolean trackBosses() { return false; }
+
+    @ConfigItem(keyName = "trackGoadingPotion", name = "Goading Potion", description = "<html>Displays a 9x9 (4-tile) aggro radius on all attackable NPCs when under the effect of a Goading Potion.<br>Automatically syncs with the game's chat messages.</html>", position = 11, section = edgeCasesSection)
     default boolean trackGoadingPotion() {
         return true;
     }
