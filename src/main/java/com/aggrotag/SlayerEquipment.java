@@ -225,9 +225,9 @@ public final class SlayerEquipment {
         list.add(new SlayerRequirement("green dragon", 1540, CheckType.ANTIFIRE_OR_SHIELD,
                 EquipmentInventorySlot.SHIELD, ANTI_DRAGON_ITEMS));
 
-        // Gryphons — Tortugan shield (SHIELD)
+        // Gryphons — Tortugan shield (CAPE slot — despite the name, it's a cape slot item)
         list.add(new SlayerRequirement("gryphon", 31398, CheckType.EQUIPMENT_SLOT,
-                EquipmentInventorySlot.SHIELD, setOf(31398)));
+                EquipmentInventorySlot.CAPE, setOf(31398)));
 
         // Harpie bug swarms — Lit bug lantern (SHIELD)
         list.add(new SlayerRequirement("harpie bug swarm", 7053, CheckType.EQUIPMENT_SLOT,
