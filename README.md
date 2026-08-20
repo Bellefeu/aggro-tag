@@ -61,6 +61,8 @@ All options are in the RuneLite config panel under **Aggro Tag**.
 | Dim Others in Single Combat | On | Dims tags when your combat slot is occupied |
 | Dim In-Combat Tags % | 25 | How transparent dimmed tags become |
 | Slayer Warnings! | On | Shows missing slayer equipment icons with a red cancel sign |
+| Exclude NPCs > Lvl | 0 (Off) | Ignores NPCs above the configured combat level |
+| Exclude NPCs < Lvl | 0 (Off) | Ignores NPCs below the configured combat level, including NPCs without one |
 
 ### Max Hit
 | Option | Default | Description |

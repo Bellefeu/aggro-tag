@@ -82,9 +82,21 @@ public interface AggroTagConfig extends Config {
         return false;
     }
 
+    @Range(min = 0, max = 2000)
+    @ConfigItem(keyName = "excludeNpcsAboveLevel", name = "Exclude NPCs > Lvl", description = "Ignore NPCs with a combat level greater than this value. Set to 0 to disable.", position = 14)
+    default int excludeNpcsAboveLevel() {
+        return 0;
+    }
+
+    @Range(min = 0, max = 2000)
+    @ConfigItem(keyName = "excludeNpcsBelowLevel", name = "Exclude NPCs < Lvl", description = "Ignore NPCs with a combat level lower than this value, including NPCs without a combat level. Set to 0 to disable.", position = 15)
+    default int excludeNpcsBelowLevel() {
+        return 0;
+    }
+
     // ── SECTIONS ───────────────────────────────────────────────────────────────
 
-    @ConfigSection(name = "Max Hit", description = "Settings for displaying NPC max hits", position = 14, closedByDefault = true)
+    @ConfigSection(name = "Max Hit", description = "Settings for displaying NPC max hits", position = 16, closedByDefault = true)
     String maxHitSection = "maxHitSection";
 
     @ConfigSection(name = "Square Marker", description = "Replace NPC names with a customizable square marker", position = 20, closedByDefault = true)

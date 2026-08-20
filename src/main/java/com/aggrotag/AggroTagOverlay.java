@@ -30,6 +30,7 @@ import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.outline.ModelOutlineRenderer;
+import net.runelite.client.util.Text;
 
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.coords.LocalPoint;
@@ -187,6 +188,10 @@ public class AggroTagOverlay extends Overlay {
         // Separate the NPCs into rendering layers and identify all aggressors
         for (NPC npc : client.getTopLevelWorldView().npcs()) {
             if (npc == null || npc.getName() == null) {
+                continue;
+            }
+
+            if (plugin.isNpcExcludedByLevel(npc)) {
                 continue;
             }
 
@@ -518,7 +523,7 @@ public class AggroTagOverlay extends Overlay {
             return null; // nothing to render
         }
 
-        String name = npc.getName();
+        String name = sanitizeNpcName(npc.getName());
         Point textPoint = npc.getCanvasTextLocation(graphics, name, npc.getLogicalHeight() + TEXT_HEIGHT_OFFSET);
         if (textPoint == null) {
             return null;
@@ -642,7 +647,7 @@ public class AggroTagOverlay extends Overlay {
         boolean hiddenByConfig = (isTargetingPlayer && plugin.getConfig().hideTargeting())
                 || (!isTargetingPlayer && plugin.getConfig().hideAggro());
 
-        String name = npc.getName();
+        String name = sanitizeNpcName(npc.getName());
 
         Point textPoint = npc.getCanvasTextLocation(
                 graphics, name, npc.getLogicalHeight() + TEXT_HEIGHT_OFFSET);
@@ -1169,5 +1174,9 @@ public class AggroTagOverlay extends Overlay {
         graphics.drawString(text, x + 1, y + 1);
         graphics.setColor(color);
         graphics.drawString(text, x, y);
+    }
+
+    static String sanitizeNpcName(String name) {
+        return Text.removeTags(name);
     }
 }

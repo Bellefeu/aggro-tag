@@ -298,6 +298,18 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         return itemManager;
     }
 
+    public boolean isNpcExcludedByLevel(NPC npc) {
+        return npc != null && isCombatLevelExcluded(
+                npc.getCombatLevel(),
+                config.excludeNpcsAboveLevel(),
+                config.excludeNpcsBelowLevel());
+    }
+
+    static boolean isCombatLevelExcluded(int combatLevel, int excludeAboveLevel, int excludeBelowLevel) {
+        return (excludeAboveLevel > 0 && combatLevel > excludeAboveLevel)
+                || (excludeBelowLevel > 0 && combatLevel < excludeBelowLevel);
+    }
+
     private int lastCombatCheckCycle = -1;
     private boolean lastCombatResult = false;
 
