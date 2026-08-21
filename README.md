@@ -18,7 +18,7 @@
 | **God Wars Dungeon** | Full faction item detection — wearing the right god item suppresses that faction's tags. |
 | **Slayer Integration** | Task-only aggressors (Kurasks, Wyverns, etc.) are only tagged when you're on their task. |
 | **Slayer Warnings** | Shows missing slayer equipment icons with a red cancel sign on tagged slayer monsters. |
-| **Disguise Detection** | Handles Ape Atoll Greegrees, Darkmeyer Vyre noble clothing, Mourner gear, Ethereum Bracelet, and more. |
+| **Disguise Detection** | Handles Ape Atoll Greegrees, Darkmeyer Vyre noble clothing, Mourner gear, Ethereum Bracelet, and more. Ape Atoll's surface also goes quiet for good once Monkey Madness II is complete. |
 | **Minigame Mode** | Automatically disables the plugin or reduces visual clutter inside instances like the Inferno, NMZ, Raids, and Colosseum. |
 | **Single Combat Dimming** | Dims tags for NPCs that can't currently reach you when your combat slot is occupied. |
 | **NPC Outline** | Draw a customizable outline around aggressive and targeting NPCs. |
@@ -40,7 +40,7 @@ The plugin evaluates aggression in priority order:
 
 ### Known Limitations
 - Aggression radius is hard-coded, and is not accurate for all NPCs. This is being frequently updated as NPC radii are found. If you find an NPC with an incorrect aggression radius, please submit a Github issue with the NPCs name and ID if you can!
-- Quest-state aggression — some NPCs become hostile mid-quest and revert after. The plugin falls back to the 2× rule for these.
+- Quest-state aggression — some NPCs become hostile mid-quest and revert after. Only Monkey Madness II is tracked (it permanently pacifies Ape Atoll's surface); the plugin falls back to the 2× rule for the rest.
 
 ---
 

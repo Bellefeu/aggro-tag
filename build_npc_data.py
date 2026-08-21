@@ -18,8 +18,61 @@ for i in [11290,11291,11293]: faction_map[i] = "zaros"
 
 aggro_overrides = {
     # Sand Crabs
-    5935: 1, 7206: 1, 5936: 1, 7207: 1
+    5935: 1, 7206: 1, 5936: 1, 7207: 1,
+    # Combat Training Camp ogres (level 63). The Ogre infobox marks this version
+    # "Yes", but the article body states "These ogres are unaggressive" - they are
+    # caged targets for Ranged/Magic practice and never retaliate.
+    1153: 0
 }
+
+
+# Wiki |aggressive= values are free text, so a substring test gets them wrong in
+# both directions: "No (Yes, during specific quest(s))" reads as aggressive, and
+# "Yes (depends on location)" claims a certainty a flat flag cannot carry.
+_MARKUP_REF = re.compile(r"<ref[^>]*>.*?</ref>|<ref[^>]*/>", re.S | re.I)
+_MARKUP_TAG = re.compile(r"<[^>]+>")
+_MARKUP_PIPED_LINK = re.compile(r"\[\[[^\]|]*\|([^\]]*)\]\]")
+_MARKUP_LINK = re.compile(r"\[\[([^\]]*)\]\]")
+_MARKUP_TEMPLATE = re.compile(r"\{\{[^}]*\}\}")
+_MARKUP_BOLD_ITALIC = re.compile(r"'{2,}")
+_LEADING_VERDICT = re.compile(r"^(yes|no|not)\b")
+_LOCATION_DEPENDENT = re.compile(r"depends on location|varies by location|varies depending")
+_NON_ANSWERS = ("n/a", "na", "unknown", "varies", "?", "-")
+
+
+def parse_aggressive(raw):
+    """Map a wiki |aggressive= value to 1, 0, or None.
+
+    None means the wiki gives no flat answer; the plugin then falls back to the
+    in-game combat-level rules instead of trusting a guess.
+    """
+    if raw is None:
+        return None
+
+    text = _MARKUP_REF.sub("", raw)
+    text = _MARKUP_TAG.sub("", text)
+    text = _MARKUP_PIPED_LINK.sub(r"\1", text)
+    text = _MARKUP_LINK.sub(r"\1", text)
+    text = _MARKUP_TEMPLATE.sub("", text)
+    text = _MARKUP_BOLD_ITALIC.sub("", text).strip()
+    if not text:
+        return None
+
+    low = text.lower()
+    if low in _NON_ANSWERS:
+        return None
+
+    # The leading word is the answer; anything after it is a qualifier.
+    verdict = _LEADING_VERDICT.match(low)
+    if not verdict:
+        return None  # "Only in the lower level of ...", "Depends on ..." etc.
+
+    if verdict.group(1) == "yes":
+        # A disguise or faction qualifier is still a yes - the plugin suppresses
+        # those itself. A location qualifier is not something a flag can express.
+        return None if _LOCATION_DEPENDENT.search(low) else 1
+    return 0
+
 
 def fetch_json(url, data=None):
     req = urllib.request.Request(url, headers={'User-Agent': UA})
@@ -106,10 +159,9 @@ for i in range(0, total, 50):
                     
                 m = re.match(r"^\|aggressive([0-9]*)\s*=\s*(.*)", line)
                 if m:
-                    suffix = m.group(1)
-                    val = m.group(2).strip().lower()
-                    if "yes" in val: aggro_map[suffix] = 1
-                    elif "no" in val: aggro_map[suffix] = 0
+                    parsed = parse_aggressive(m.group(2))
+                    if parsed is not None:
+                        aggro_map[m.group(1)] = parsed
                     
                 m = re.match(r"^\|attack style([0-9]*)\s*=\s*(.*)", line)
                 if m:

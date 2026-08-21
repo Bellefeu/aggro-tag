@@ -18,6 +18,8 @@ import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.NPC;
+import net.runelite.api.Quest;
+import net.runelite.api.QuestState;
 import net.runelite.api.Skill;
 import net.runelite.api.EquipmentInventorySlot;
 import net.runelite.client.game.ItemManager;
@@ -73,17 +75,18 @@ import net.runelite.client.eventbus.Subscribe;
  *
  * ── Known Limitations (require runtime game state) ───────────────────────────
  * - Quest-state aggression: Some NPCs become hostile mid-quest and revert
- * after.
- * Would require tracking quest completion state via the Quests API.
- * → Plugin treats these as unknown and falls back to the 2x rule.
+ * after. Only Monkey Madness II is tracked (it permanently pacifies the
+ * surface of Ape Atoll); the rest fall back to the 2x rule.
  * - Prayer/Protect interactions: Prayers affect damage taken, not whether an
  * NPC
  * initiates combat. This was never an aggression-detection concern.
  *
  * ── Refreshing NPC Data ──────────────────────────────────────────────────────
  * To regenerate npc_data.json after a game update:
- * 1. bash build_npc_data.sh (fetches all wiki monster pages)
- * 2.
+ * 1. python3 build_npc_data.py (fetches all wiki monster pages)
+ * 2. Review the diff — the wiki's |aggressive= field is free text, and cases it
+ * states in prose rather than in the infobox live in that script's
+ * aggro_overrides table.
  * The spot-check output confirms key NPCs are correct before committing.
  */
 @Slf4j
@@ -167,6 +170,31 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     private static final Set<Integer> GREEGREE_IDS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             4024, 4025, 4026, 4027, 4028, 4029, 4030, 4031, 19525)));
 
+    /**
+     * Map regions covering the surface of Ape Atoll — Marim and the jungle around
+     * it. Both island-specific rules (greegree disguises and the peace that
+     * follows Monkey Madness II) apply here and nowhere else; the Ape Atoll
+     * Dungeon sits in its own regions and its undead stay aggressive regardless.
+     */
+    private static final Set<Integer> APE_ATOLL_SURFACE_REGIONS = Collections
+            .unmodifiableSet(new HashSet<>(Arrays.asList(10794, 10795, 11050, 11051)));
+
+    /**
+     * Ape Atoll surface NPCs that only attack players they cannot mistake for a
+     * monkey. Padulah and the island's wildlife are listed by ID because nothing
+     * in their names marks them as part of the island's aggression rules.
+     */
+    private static final Set<Integer> APE_ATOLL_SURFACE_AGGRESSORS = Collections
+            .unmodifiableSet(new HashSet<>(Arrays.asList(
+                    5238, 5239, // Spider (Ape Atoll)
+                    5242, // Scorpion (Ape Atoll)
+                    5243, // Jungle spider (Ape Atoll)
+                    5244, // Snake (Ape Atoll)
+                    5263, // Padulah
+                    5271, // Monkey Guard (ninja)
+                    5272, 5273, 5274, 6813, // Monkey Archer
+                    5275, 5276))); // Monkey Guard
+
     private static final Set<Integer> VYRE_NOBLE_TOPS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             24826, 24810, 24794, 24834, 24818, 24802, 24838, 24822, 24806, 24676, 24673, 24830, 24814, 24798)));
 
@@ -247,6 +275,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
         overlayManager.add(overlay);
         keyManager.registerKeyListener(this);
         radiusHotkeyHeld = true; // Show radius on login by default
+        monkeyMadness2Complete = false;
         log.debug("Aggro Tag plugin started");
     }
 
@@ -312,6 +341,8 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
 
     private int lastCombatCheckCycle = -1;
     private boolean lastCombatResult = false;
+
+    private boolean monkeyMadness2Complete = false;
 
     /**
      * Returns true if the local player is currently in combat
@@ -718,6 +749,13 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
                         toleranceTicksAccumulated = 0;
                     }
                 }
+                // Read before the first frame is drawn — a player who logs out in
+                // Marim would otherwise see a tick of tags that Monkey Madness II
+                // has already retired. Last in the branch so the tolerance reset
+                // above is never skipped, and onGameTick re-reads as a backstop.
+                if (!monkeyMadness2Complete && config.trackApeAtoll()) {
+                    refreshMonkeyMadness2();
+                }
                 break;
             case LOGGING_IN:
                 loggingIn = true;
@@ -731,6 +769,7 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
                 currentPlane = -1;
                 goadingPotionActive = false;
                 goadingPotionTicksRemaining = 0;
+                monkeyMadness2Complete = false;
                 break;
             default:
                 break;
@@ -747,6 +786,13 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
             if (goadingPotionTicksRemaining == 0) {
                 goadingPotionActive = false;
             }
+        }
+
+        // Catches the quest being finished mid-session, and backs up the read done
+        // at login. A finished quest never un-finishes, so this stops polling once
+        // it reads true.
+        if (!monkeyMadness2Complete && config.trackApeAtoll() && isOnApeAtollSurface()) {
+            refreshMonkeyMadness2();
         }
 
         if (!config.trackTolerance())
@@ -1023,6 +1069,26 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
                 safeName.equals("cave kraken");
     }
 
+    /**
+     * Reads the Monkey Madness II quest state into {@link #monkeyMadness2Complete}.
+     *
+     * This costs a client script, so it is only ever called from event handlers —
+     * never from the render loop, which reaches {@link #isAggressive} once per NPC
+     * per frame.
+     */
+    private void refreshMonkeyMadness2() {
+        monkeyMadness2Complete = Quest.MONKEY_MADNESS_II.getState(client) == QuestState.FINISHED;
+    }
+
+    /** True while the local player is standing on the surface of Ape Atoll. */
+    private boolean isOnApeAtollSurface() {
+        if (client.getLocalPlayer() == null)
+            return false;
+
+        WorldPoint location = client.getLocalPlayer().getWorldLocation();
+        return location != null && APE_ATOLL_SURFACE_REGIONS.contains(location.getRegionID());
+    }
+
     private boolean hasGreegreeEquipped(ItemContainer equipment) {
         if (equipment == null)
             return false;
@@ -1103,7 +1169,18 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
                 return true;
         }
 
-        if (config.trackApeAtoll() && (safeName.contains("monkey") || safeName.contains("gorilla"))) {
+        // Marim's inhabitants attack anyone they cannot mistake for a monkey, and
+        // stand down for good once Monkey Madness II is complete. Scoping both
+        // rules to the island's surface regions leaves alone the NPCs that merely
+        // share the name — Karamjan monkeys, magic carpet monkeys — along with the
+        // Crash Site Cavern gorillas, which only exist after the quest and remain
+        // aggressive there.
+        if (config.trackApeAtoll()
+                && (APE_ATOLL_SURFACE_AGGRESSORS.contains(npcId)
+                        || safeName.contains("monkey") || safeName.contains("gorilla"))
+                && isOnApeAtollSurface()) {
+            if (monkeyMadness2Complete)
+                return false;
             if (hasGreegreeEquipped(equipment))
                 return false;
             if (config.trackTolerance() && hasTolerance())

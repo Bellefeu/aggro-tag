@@ -207,12 +207,9 @@ Dagannoth (Waterbirth Island): 2259, 3185, 5942, 5943
 Dagannoth mother: 980, 981, 982, 983, 984, 985, 986, 987, 988, 6361, 6362, 6363, 6364, 6365, 6366
 Dagannoth mother (hard): 6300, 6301, 6302, 6303, 6304, 6305
 Dagannoth Prime: 2266, 6497, 12442
-Dagannoth Prime (Echo): 15619
 Dagannoth Rex: 2267, 6498, 12439
-Dagannoth Rex (Echo): 15620
 Dagannoth spawn: 3184
 Dagannoth Supreme: 2265, 6496, 12441
-Dagannoth Supreme (Echo): 15618
 Damien Leucurte: 9561, 9562, 9563, 9564
 Damis: 682, 683, 6346, 6347
 Damis (hard): 1134, 1135
@@ -415,7 +412,6 @@ Icefiend: 3140
 Icelord: 852, 853, 854, 855
 Imp Champion: 3355
 Impaler deer: 15759
-Iorwerth Archer: 3428, 8760
 Iron dragon: 272, 273, 7254, 8080
 Ithoi the Navigator: 7964
 Jackal: 4185, 11583
@@ -526,7 +522,7 @@ Mirrorback Araxyte: 13671
 Mithril dragon: 2919, 8088, 8089
 Mogre: 2592
 Molanisk: 1
-Monk of Zamorak: 529
+Monk of Zamorak: 529, 3484, 3485, 3486, 16271, 16272, 16273
 Monkey Archer: 5272, 5273, 5274, 6813
 Monkey Guard: 5271, 5275, 5276
 Monkey Zombie: 5281, 5282, 5283
@@ -537,7 +533,7 @@ Moss Guardian: 891, 6386
 Moss Guardian (hard): 6325
 Mosschin: 11271, 11298
 Mother: 8428, 8429, 8430
-Mountain troll: 936, 937, 938, 939, 940, 941, 942, 4143
+Mountain troll: 936, 937, 938, 939, 940, 941, 942, 4143, 16330, 16331, 16332
 Mourner: 8844, 8845, 8846, 9017
 Mouse: 5127, 5128
 Mugger: 513, 1461, 6996, 13282
@@ -562,7 +558,7 @@ Oaky Doak: 15677
 Obor: 7416
 Ocelot: 14545, 14546, 14547
 Ochre Blamish Snail: 2646, 2651
-Ogre: 136, 1153, 2095, 2096, 2233
+Ogre: 2233
 Ogress Shaman: 7991, 7992
 Ogress Warrior: 7989, 7990
 Oipuis: 5259
@@ -859,6 +855,7 @@ Urium Shadow: 6143
 Uyoro: 5260
 Vampyre Juvinate: 3694, 3695, 3698, 3699, 4427, 4428, 4429, 4430, 4432, 4442, 4443, 4486, 4487, 5634, 5635, 5636, 5637, 5638, 5639, 9614, 9615, 9616, 9617, 9727, 9728, 9729, 9730
 Vampyre kraken: 15212
+Vampyre Snail: 16344
 Vanguard: 7526, 7527, 7528, 7529
 Vanstrom Klause: 3734, 3735, 3736, 3737, 3738, 3739, 8239, 8240, 9567, 9568, 9569, 9570, 9571, 9632
 Vardorvis: 13656
@@ -1155,6 +1152,7 @@ Infernal pyrelord: 9465
 Insatiable Bloodveld: 7397
 Insatiable mutated Bloodveld: 7398
 Invrigar the Necromancer: 511
+Iorwerth Archer: 3428, 8760
 Iorwerth Warrior: 3429, 8759, 9502, 9503
 Irina: 2622
 Irvig Senay: 3965
@@ -1190,7 +1188,7 @@ Lost barbarian: 2921
 Lucien: 3443
 Lynx: 11068, 11069
 Lynx Tamer: 11071
-Mad Angel: 16305, 16309, 16314, 16315
+Mad Angel: 16305, 16307, 16309, 16311
 Magma strykewyrm: 15504
 Malevolent Mage: 7396
 Man: 3298
@@ -1208,7 +1206,7 @@ Minotaur: 2481, 2482, 2483
 Mister U.: 15679
 Mogre: 15230, 15232
 Monk: 2579, 4068, 4246, 6956
-Monk of Zamorak: 527, 528, 3484, 3485, 3486, 8400, 8401, 8698
+Monk of Zamorak: 527, 528, 8400, 8401, 8698
 Monkey (monster): 1038, 2848
 Monstrous basilisk: 7395
 Moonlight Cockatrice: 13030
@@ -1233,6 +1231,7 @@ Nylocas Matomenos: 8366, 8385, 10820, 10828, 10845, 10862
 Nylocas Toxobolos: 8343, 8346, 8349, 8352, 8382, 10775, 10778, 10781, 10784, 10792, 10795, 10798, 10801, 10859
 Obelisk: 11751
 Ocga: 4108
+Ogre: 136, 1153, 2095, 2096
 Ogre chieftain: 4362
 Ogre shaman: 4383, 4387, 4389, 4391, 4393, 4395
 Oomlie bird: 2062
