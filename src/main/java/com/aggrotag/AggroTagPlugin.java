@@ -339,6 +339,20 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
                 || (excludeBelowLevel > 0 && combatLevel < excludeBelowLevel);
     }
 
+    /**
+     * Returns true when this max hit falls outside the configured min/max window
+     * and its overlay label should therefore be suppressed. Only the max hit
+     * label is affected — the NPC's tag, marker and radius still render.
+     */
+    public boolean isMaxHitHiddenByThreshold(int maxHit) {
+        return isMaxHitExcluded(maxHit, config.hideMaxHitAbove(), config.hideMaxHitBelow());
+    }
+
+    static boolean isMaxHitExcluded(int maxHit, int hideAboveMaxHit, int hideBelowMaxHit) {
+        return (hideAboveMaxHit > 0 && maxHit > hideAboveMaxHit)
+                || (hideBelowMaxHit > 0 && maxHit < hideBelowMaxHit);
+    }
+
     private int lastCombatCheckCycle = -1;
     private boolean lastCombatResult = false;
 

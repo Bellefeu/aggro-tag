@@ -49,25 +49,27 @@ import net.runelite.api.coords.LocalPoint;
  * <h3>Max hit display modes</h3>
  * <ul>
  * <li><b>Show Max Hit OFF</b> — no max hit shown.</li>
- * <li><b>ON, Color by Style OFF</b> — single
- * <span style="color:gold">yellow</span> {@code [N]}.</li>
+ * <li><b>ON, Color by Style OFF</b> — single {@code [N]} in the configured
+ * Max Hit Color (white by default).</li>
  * <li><b>ON, Color by Style ON</b> — one label per attack style:
- * <span style="color:red">Red</span> melee,
+ * <span style="color:gold">Yellow</span> melee,
  * <span style="color:#6496FF">Blue</span> magic,
  * <span style="color:green">Green</span> ranged.
- * Yellow fallback when style is unknown.</li>
+ * Falls back to the Max Hit Color when the style is unknown.</li>
  * <li><b>Show HP % ON</b> — appends {@code · N%} (of current HP) after the
  * number(s).
  * Values over 100% mean the NPC can theoretically one-shot you.</li>
  * </ul>
+ *
+ * <p>A max hit outside the configured {@code Hide Max Hit > #} /
+ * {@code Hide Max Hit < #} window is suppressed; the NPC's name tag, marker
+ * and aggression radius are unaffected.</p>
  */
 public class AggroTagOverlay extends Overlay {
     // ── Max hit colours ───────────────────────────────────────────────────────
 
-    /** Yellow — melee attack style AND the default single-label colour. */
-    private static final Color COLOR_DEFAULT = new Color(255, 210, 0, 255);
-    /** Yellow — melee. */
-    private static final Color COLOR_MELEE = COLOR_DEFAULT;
+    /** Yellow — melee attack style. */
+    private static final Color COLOR_MELEE = new Color(255, 210, 0, 255);
     /** Blue — magic attack style. */
     private static final Color COLOR_MAGIC = new Color(100, 160, 255, 255);
     /** Green — ranged attack style. */
@@ -513,9 +515,8 @@ public class AggroTagOverlay extends Overlay {
         boolean isCombatState = isAggro || isTargetingPlayer;
         boolean showName = isCombatState && !hiddenByConfig && !(inMinigame && behavior == MinigameBehavior.HIDE_NAMES);
 
-        boolean showMaxHitForState = plugin.getConfig().showAllMaxHits() || (isTargetingPlayer ? plugin.getConfig().showTargetingMaxHit() : (isAggro && plugin.getConfig().showAggroMaxHit()));
         int maxHit = plugin.getMaxHit(npc);
-        boolean showMaxHit = showMaxHitForState && maxHit >= 0;
+        boolean showMaxHit = shouldShowMaxHit(isAggro, isTargetingPlayer, maxHit);
 
         boolean hasIdStr = (plugin.getConfig().showNpcLevel() && npc.getCombatLevel() > 0) || plugin.getConfig().showNpcId();
 
@@ -595,8 +596,7 @@ public class AggroTagOverlay extends Overlay {
         Point2D.Float off = tagOffsets.getOrDefault(npc.getIndex(), new Point2D.Float(0, 0));
         
         boolean isTargetingPlayer = npc.getInteracting() == client.getLocalPlayer();
-        boolean showMaxHitForState = plugin.getConfig().showAllMaxHits() || (isTargetingPlayer ? config.showTargetingMaxHit() : (isAggro && config.showAggroMaxHit()));
-        boolean hasMaxHit = showMaxHitForState && plugin.getMaxHit(npc) >= 0;
+        boolean hasMaxHit = shouldShowMaxHit(isAggro, isTargetingPlayer, plugin.getMaxHit(npc));
 
         if (isAggro || hasMaxHit) {
             renderAggroTag(graphics, npc, isAggro, off.x, off.y);
@@ -761,11 +761,8 @@ public class AggroTagOverlay extends Overlay {
         }
 
         // ── Calculate Max Hit State & ID string placement for Hidden Names ─────────
-        boolean showMaxHitForState = plugin.getConfig().showAllMaxHits() || (isTargetingPlayer
-                ? plugin.getConfig().showTargetingMaxHit()
-                : (isAggro && plugin.getConfig().showAggroMaxHit()));
         int maxHit = plugin.getMaxHit(npc);
-        boolean showMaxHit = showMaxHitForState && maxHit >= 0;
+        boolean showMaxHit = shouldShowMaxHit(isAggro, isTargetingPlayer, maxHit);
         
         int labelX = 0;
         boolean centerLabel = !showName;
@@ -816,13 +813,10 @@ public class AggroTagOverlay extends Overlay {
         if (plugin.getConfig().colorHpNumber()) {
             int hp = client.getBoostedSkillLevel(Skill.HITPOINTS);
             rawHpPercent = hp > 0 ? (maxHit * 100) / hp : 0;
-            Color baseColor = plugin.getConfig().maxHitBaseColor();
-            Color resolved = getThresholdColor(rawHpPercent);
-            // Only override if a threshold was actually reached (color differs from base)
-            if (!resolved.equals(baseColor)) {
-                useThresholdColor = true;
-                thresholdColor = resolved;
-            }
+            // Null means no threshold was reached, so the configured Max Hit
+            // Color (or attack-style coloring) stays in charge.
+            thresholdColor = getThresholdColor(rawHpPercent);
+            useThresholdColor = thresholdColor != null;
         }
 
         int maxHitEndX = labelX; // Track end of max hit for warning placement
@@ -922,9 +916,9 @@ public class AggroTagOverlay extends Overlay {
         }
 
         if (!drew) {
-            // Unknown style — use the same colour as the NPC name tag so it's
-            // immediately obvious that this max hit is unclassified.
-            Color unknownColor = plugin.getConfig().aggroNameColor();
+            // Unknown style — there is no style colour to use, so fall back to
+            // the configured Max Hit Color.
+            Color unknownColor = plugin.getConfig().maxHitBaseColor();
             String prefix = centerLabel ? "[" + maxHit : " [" + maxHit;
             drawTextWithShadow(graphics, prefix, curX, y, unknownColor);
             int tempX = curX + fm.stringWidth(prefix);
@@ -1026,8 +1020,21 @@ public class AggroTagOverlay extends Overlay {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /**
-     * Returns the threshold color for the given hpPercent value.
-     * Falls back to COLOR_DEFAULT (yellow) if no threshold is reached.
+     * Returns true when the max hit label should be drawn for this NPC. All
+     * three conditions must hold: the per-state toggles allow it, the bundled
+     * wiki data actually has a value, and that value falls inside the
+     * configured min/max window.
+     */
+    private boolean shouldShowMaxHit(boolean isAggro, boolean isTargetingPlayer, int maxHit) {
+        AggroTagConfig config = plugin.getConfig();
+        boolean allowedByState = config.showAllMaxHits()
+                || (isTargetingPlayer ? config.showTargetingMaxHit() : (isAggro && config.showAggroMaxHit()));
+        return allowedByState && maxHit >= 0 && !plugin.isMaxHitHiddenByThreshold(maxHit);
+    }
+
+    /**
+     * Returns the threshold color for the given hpPercent value, or
+     * {@code null} when neither threshold has been reached.
      */
     private Color getThresholdColor(int hpPercent) {
         int t1 = plugin.getConfig().hpPercentThreshold1();
@@ -1046,7 +1053,7 @@ public class AggroTagOverlay extends Overlay {
                 return plugin.getConfig().colorHpPercent50();
             }
         }
-        return plugin.getConfig().maxHitBaseColor();
+        return null;
     }
 
     private boolean isHovering(NPC npc) {

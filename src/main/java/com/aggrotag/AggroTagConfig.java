@@ -131,67 +131,79 @@ public interface AggroTagConfig extends Config {
         return false;
     }
 
-    @ConfigItem(keyName = "colorByAttackStyle", name = "Color Max Hit by Attack Style", description = "<html>When enabled, shows a separate colored number per attack style:<br>&nbsp;&nbsp;<b><font color='#ffe550ff'>Yellow</font></b> = Melee &nbsp;<b><font color='#3CFF64'>Green</font></b> = Ranged &nbsp;<b><font color='#6496FF'>Blue</font></b> = Magic<br>Falls back to yellow if the attack style is unknown.</html>", position = 4, section = maxHitSection)
-    default boolean colorByAttackStyle() {
-        return true;
+    @Range(min = 0, max = 500)
+    @ConfigItem(keyName = "hideMaxHitAbove", name = "Hide Max Hit > #", description = "<html>Hides the max hit overlay for NPCs whose max hit is greater than this value.<br>The NPC's name tag, marker and radius are unaffected. Set to 0 to disable.</html>", position = 4, section = maxHitSection)
+    default int hideMaxHitAbove() {
+        return 0;
     }
 
-    @ConfigItem(keyName = "maxHitBaseColor", name = "Max Hit Base Color", description = "The default color of the max hit number when 'Color Max Hit by Attack Style' is disabled.", position = 5, section = maxHitSection)
+    @Range(min = 0, max = 500)
+    @ConfigItem(keyName = "hideMaxHitBelow", name = "Hide Max Hit < #", description = "<html>Hides the max hit overlay for NPCs whose max hit is lower than this value.<br>The NPC's name tag, marker and radius are unaffected. Set to 0 to disable.</html>", position = 5, section = maxHitSection)
+    default int hideMaxHitBelow() {
+        return 0;
+    }
+
+    @ConfigItem(keyName = "maxHitBaseColor", name = "Max Hit Color", description = "The color of the max hit number. Ignored while 'Color Max Hit by Attack Style' is enabled.", position = 6, section = maxHitSection)
     default Color maxHitBaseColor() {
         return Color.WHITE;
     }
 
-    @ConfigItem(keyName = "showHpPercent", name = "Show Max Hit as % of HP", description = "<html>Appends the max hit as a percentage of your current Hitpoints, e.g. [15 \u00b7 25%]. <br>Values over 100% mean the NPC can theoretically one-shot you.</html>", position = 6, section = maxHitSection)
+    @ConfigItem(keyName = "colorByAttackStyle", name = "Color Max Hit by Attack Style", description = "<html>When enabled, overwrites the Max Hit Color with a separate colored number per attack style:<br>&nbsp;&nbsp;<b><font color='#ffe550ff'>Yellow</font></b> = Melee &nbsp;<b><font color='#3CFF64'>Green</font></b> = Ranged &nbsp;<b><font color='#6496FF'>Blue</font></b> = Magic<br>Falls back to the Max Hit Color if the attack style is unknown.</html>", position = 7, section = maxHitSection)
+    default boolean colorByAttackStyle() {
+        return true;
+    }
+
+    @ConfigItem(keyName = "showHpPercent", name = "Show Max Hit as % of HP", description = "<html>Appends the max hit as a percentage of your current Hitpoints, e.g. [15 \u00b7 25%]. <br>Values over 100% mean the NPC can theoretically one-shot you.</html>", position = 8, section = maxHitSection)
     default boolean showHpPercent() {
         return false;
     }
 
     @Range(min = 0, max = 5)
-    @ConfigItem(keyName = "hpPercentSizeIncrease", name = "Base HP % Size Increase", description = "Increase the font size of the % number.", position = 7, section = maxHitSection)
+    @ConfigItem(keyName = "hpPercentSizeIncrease", name = "Base HP % Size Increase", description = "Increase the font size of the % number.", position = 9, section = maxHitSection)
     default int hpPercentSizeIncrease() {
         return 0;
     }
 
-    @ConfigItem(keyName = "colorHpNumber", name = "Custom HP # Colors", description = "<html>When enabled, overrides the 'Color Max Hit by Attack Style' coloring<br>and instead colors the max hit number using your threshold colors below.<br>Requires thresholds to be configured.</html>", position = 8, section = maxHitSection)
+    @ConfigItem(keyName = "colorHpNumber", name = "Custom HP # Colors", description = "<html>When enabled, overrides both the Max Hit Color and the 'Color Max Hit by Attack Style' coloring<br>and instead colors the max hit number using your threshold colors below.<br>Requires thresholds to be configured.</html>", position = 10, section = maxHitSection)
     default boolean colorHpNumber() {
         return true;
     }
 
-    @ConfigItem(keyName = "colorHpPercent", name = "Custom HP % Colors", description = "Color the % text based on danger level.", position = 9, section = maxHitSection)
+    @ConfigItem(keyName = "colorHpPercent", name = "Custom HP % Colors", description = "Color the % text based on danger level.", position = 11, section = maxHitSection)
     default boolean colorHpPercent() {
         return true;
     }
 
     @Range(min = 0, max = 100)
-    @ConfigItem(keyName = "hpPercentThreshold1", name = "HP % Threshold 1", description = "First threshold for HP percentage coloring (e.g. 50).", position = 10, section = maxHitSection)
+    @ConfigItem(keyName = "hpPercentThreshold1", name = "HP % Threshold 1", description = "First threshold for HP percentage coloring (e.g. 50).", position = 12, section = maxHitSection)
     default int hpPercentThreshold1() {
         return 50;
     }
 
     @Range(min = 0, max = 100)
-    @ConfigItem(keyName = "hpPercentThreshold2", name = "HP % Threshold 2", description = "Second threshold for HP percentage coloring (e.g. 100).", position = 11, section = maxHitSection)
+    @ConfigItem(keyName = "hpPercentThreshold2", name = "HP % Threshold 2", description = "Second threshold for HP percentage coloring (e.g. 100).", position = 13, section = maxHitSection)
     default int hpPercentThreshold2() {
         return 100;
     }
 
-    @ConfigItem(keyName = "colorHpPercent50", name = "Threshold 1 Color", description = "Color when the max hit is > Threshold 1 of your current HP.", position = 12, section = maxHitSection)
+    @ConfigItem(keyName = "colorHpPercent50", name = "Threshold 1 Color", description = "Color when the max hit is > Threshold 1 of your current HP.", position = 14, section = maxHitSection)
     default Color colorHpPercent50() {
         return new Color(39, 232, 163);
     }
 
-    @ConfigItem(keyName = "colorHpPercent100", name = "Threshold 2 Color", description = "Color when the max hit is > Threshold 2 of your current HP.", position = 13, section = maxHitSection)
+    @ConfigItem(keyName = "colorHpPercent100", name = "Threshold 2 Color", description = "Color when the max hit is > Threshold 2 of your current HP.", position = 15, section = maxHitSection)
     default Color colorHpPercent100() {
         return new Color(240, 25, 195);
     }
 
     @Range(min = 0, max = 10)
-    @ConfigItem(keyName = "hpPercentSizeIncrease50", name = "Threshold 1 Size Increase", description = "Additional font size increase when max hit is > Threshold 1.", position = 14, section = maxHitSection)
+    @ConfigItem(keyName = "hpPercentSizeIncrease50", name = "Threshold 1 Size Increase", description = "Additional font size increase when max hit is > Threshold 1.", position = 16, section = maxHitSection)
     default int hpPercentSizeIncrease50() {
         return 4;
     }
 
     @Range(min = 0, max = 10)
-    @ConfigItem(keyName = "hpPercentSizeIncrease100", name = "Threshold 2 Size Increase", description = "Additional font size increase when max hit is > Threshold 2.", position = 15, section = maxHitSection)
+    @ConfigItem(keyName = "hpPercentSizeIncrease100", name = "Threshold 2 Size Increase", description = "Additional font size increase when max hit is > Threshold 2.", position = 17, section = maxHitSection)
     default int hpPercentSizeIncrease100() {
         return 9;
     }

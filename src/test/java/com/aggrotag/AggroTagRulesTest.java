@@ -1,6 +1,8 @@
 package com.aggrotag;
 
 import com.google.gson.Gson;
+
+import java.awt.Color;
 import org.junit.jupiter.api.Test;
 
 import net.runelite.client.config.ConfigItem;
@@ -22,6 +24,65 @@ class AggroTagRulesTest {
         assertEquals("Exclude NPCs < Lvl", below.name());
         assertEquals("", above.section());
         assertEquals("", below.section());
+    }
+
+    @Test
+    void exposesDisabledMaxHitThresholdsInTheMaxHitSection() throws NoSuchMethodException {
+        AggroTagConfig defaults = new AggroTagConfig() { };
+        ConfigItem above = AggroTagConfig.class.getMethod("hideMaxHitAbove").getAnnotation(ConfigItem.class);
+        ConfigItem below = AggroTagConfig.class.getMethod("hideMaxHitBelow").getAnnotation(ConfigItem.class);
+
+        assertEquals(0, defaults.hideMaxHitAbove());
+        assertEquals(0, defaults.hideMaxHitBelow());
+        assertEquals("Hide Max Hit > #", above.name());
+        assertEquals("Hide Max Hit < #", below.name());
+        assertEquals(AggroTagConfig.maxHitSection, above.section());
+        assertEquals(AggroTagConfig.maxHitSection, below.section());
+    }
+
+    @Test
+    void exposesTheMaxHitColorAheadOfTheAttackStyleToggle() throws NoSuchMethodException {
+        AggroTagConfig defaults = new AggroTagConfig() { };
+        ConfigItem color = AggroTagConfig.class.getMethod("maxHitBaseColor").getAnnotation(ConfigItem.class);
+        ConfigItem byStyle = AggroTagConfig.class.getMethod("colorByAttackStyle").getAnnotation(ConfigItem.class);
+
+        assertEquals(Color.WHITE, defaults.maxHitBaseColor());
+        assertTrue(defaults.colorByAttackStyle());
+        assertEquals("Max Hit Color", color.name());
+        assertEquals(AggroTagConfig.maxHitSection, color.section());
+        assertEquals(AggroTagConfig.maxHitSection, byStyle.section());
+        // The colour picker must sit directly above the toggle that overrides it,
+        // matching the Radius Color / Color by Attack Style pairing.
+        assertTrue(color.position() < byStyle.position());
+    }
+
+    @Test
+    void zeroMaxHitThresholdsDisableFiltering() {
+        assertFalse(AggroTagPlugin.isMaxHitExcluded(0, 0, 0));
+        assertFalse(AggroTagPlugin.isMaxHitExcluded(70, 0, 0));
+        assertFalse(AggroTagPlugin.isMaxHitExcluded(148, 0, 0));
+    }
+
+    @Test
+    void hidesOnlyMaxHitsStrictlyAboveUpperThreshold() {
+        assertFalse(AggroTagPlugin.isMaxHitExcluded(30, 30, 0));
+        assertTrue(AggroTagPlugin.isMaxHitExcluded(31, 30, 0));
+    }
+
+    @Test
+    void hidesOnlyMaxHitsStrictlyBelowLowerThreshold() {
+        assertFalse(AggroTagPlugin.isMaxHitExcluded(10, 0, 10));
+        assertTrue(AggroTagPlugin.isMaxHitExcluded(9, 0, 10));
+        assertTrue(AggroTagPlugin.isMaxHitExcluded(0, 0, 10));
+    }
+
+    @Test
+    void combinesMaxHitThresholdsAsAnInclusiveShownRange() {
+        assertTrue(AggroTagPlugin.isMaxHitExcluded(9, 30, 10));
+        assertFalse(AggroTagPlugin.isMaxHitExcluded(10, 30, 10));
+        assertFalse(AggroTagPlugin.isMaxHitExcluded(20, 30, 10));
+        assertFalse(AggroTagPlugin.isMaxHitExcluded(30, 30, 10));
+        assertTrue(AggroTagPlugin.isMaxHitExcluded(31, 30, 10));
     }
 
     @Test

@@ -11,7 +11,7 @@
 | Feature | Description |
 |---|---|
 | **Aggro Name Tags / Markers** | Red indicator on NPCs that will attack you. Orange when actively chasing you. You can completely hide these while retaining max hit data. |
-| **Max Hit Display** | Shows each NPC's max hit, optionally coloured by attack style (melee/ranged/magic) or danger threshold (HP %). |
+| **Max Hit Display** | Shows each NPC's max hit in a colour you pick, or coloured by attack style (melee/ranged/magic) or danger threshold (HP %). Min/max thresholds keep the clutter down. |
 | **Aggression Radius** | Visualises the exact tile radius where an NPC will notice you. Supports True Tile and dynamic Line of Sight. |
 | **Collision Prevention** | Tags physically bump into each other and float apart to prevent overlapping text. |
 | **10-Minute Tolerance** | Automatically hides tags after you've been in an area long enough for NPCs to lose interest. |
@@ -69,7 +69,10 @@ All options are in the RuneLite config panel under **Aggro Tag**.
 |---|---|---|
 | Show Aggro / Targeting Max Hit | On | Displays max hit next to aggressive or chasing NPCs |
 | Show All Max Hits | Off | Displays max hit for ALL NPCs, including passive ones |
-| Color by Attack Style | On | Separate colours per style: yellow=melee, green=ranged, blue=magic |
+| Hide Max Hit > # | 0 (Off) | Hides the max hit label when the NPC's max hit is above this value |
+| Hide Max Hit < # | 0 (Off) | Hides the max hit label when the NPC's max hit is below this value |
+| Max Hit Color | White | Colour of the max hit number, used unless Color by Attack Style is on |
+| Color by Attack Style | On | Overrides Max Hit Color with separate colours per style: yellow=melee, green=ranged, blue=magic |
 | Show Max Hit as % of HP | Off | Appends e.g. `· 25%` after the number |
 | Custom HP % / # Colors | On | Overrides style colours with danger thresholds when HP % is high |
 
@@ -172,6 +175,8 @@ This fetches the data from the Wiki API, parses it, and automatically writes the
 |---|---|
 | Tags not showing for an NPC | NPC may be passive by the 2× rule, or absent from the dataset. |
 | Max hit shows `[?]` or nothing | That NPC's max hit is not in the dataset. Check the OSRS Wiki and consider regenerating `npc_data.json`. |
+| Max hit missing on some NPCs only | Check `Hide Max Hit > #` / `Hide Max Hit < #` in the Max Hit section — a max hit outside that window is hidden. Set both to 0 to disable. |
+| Max Hit Color has no effect | `Color by Attack Style` overrides it. `Custom HP # Colors` also overrides both once a danger threshold is reached. |
 | Radius not showing | Check if "Disable Aggression Radius" is checked, or press the hotkey (default: Ctrl). |
 | GWD, disguise, or slayer warning tags aren't working | Verify you have the correct faction, slayer item, or disguise equipped. Boss rooms ignore faction immunity by design. |
 | Tags disappear after 10 minutes | This is correct behaviour — the 10-minute tolerance system is working. Disable it in Edge Cases if you don't want it. |
