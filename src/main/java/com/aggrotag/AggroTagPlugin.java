@@ -340,17 +340,24 @@ public class AggroTagPlugin extends Plugin implements KeyListener {
     }
 
     /**
-     * Returns true when this max hit falls outside the configured min/max window
-     * and its overlay label should therefore be suppressed. Only the max hit
-     * label is affected — the NPC's tag, marker and radius still render.
+     * Returns true when the NPC's max hit falls outside the configured window and
+     * the NPC should be dropped from the overlay entirely — no tag, marker,
+     * outline, radius or max hit — exactly like the combat level filter above.
+     *
+     * <p>An NPC missing from the bundled dataset reports a max hit of
+     * {@link NpcDataLoader#UNKNOWN} (-1) and so is excluded by any lower bound,
+     * mirroring how the level filter treats NPCs without a combat level.</p>
      */
-    public boolean isMaxHitHiddenByThreshold(int maxHit) {
-        return isMaxHitExcluded(maxHit, config.hideMaxHitAbove(), config.hideMaxHitBelow());
+    public boolean isNpcExcludedByMaxHit(NPC npc) {
+        return npc != null && isMaxHitExcluded(
+                getMaxHit(npc),
+                config.excludeNpcsAboveMaxHit(),
+                config.excludeNpcsBelowMaxHit());
     }
 
-    static boolean isMaxHitExcluded(int maxHit, int hideAboveMaxHit, int hideBelowMaxHit) {
-        return (hideAboveMaxHit > 0 && maxHit > hideAboveMaxHit)
-                || (hideBelowMaxHit > 0 && maxHit < hideBelowMaxHit);
+    static boolean isMaxHitExcluded(int maxHit, int excludeAboveMaxHit, int excludeBelowMaxHit) {
+        return (excludeAboveMaxHit > 0 && maxHit > excludeAboveMaxHit)
+                || (excludeBelowMaxHit > 0 && maxHit < excludeBelowMaxHit);
     }
 
     private int lastCombatCheckCycle = -1;

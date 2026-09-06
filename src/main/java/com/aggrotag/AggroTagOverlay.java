@@ -61,9 +61,9 @@ import net.runelite.api.coords.LocalPoint;
  * Values over 100% mean the NPC can theoretically one-shot you.</li>
  * </ul>
  *
- * <p>A max hit outside the configured {@code Hide Max Hit > #} /
- * {@code Hide Max Hit < #} window is suppressed; the NPC's name tag, marker
- * and aggression radius are unaffected.</p>
+ * <p>The top-level {@code Exclude NPCs > Max Hit} / {@code Exclude NPCs < Max Hit}
+ * filters drop a whole NPC from this overlay before anything is drawn, the same
+ * way the combat level filters do.</p>
  */
 public class AggroTagOverlay extends Overlay {
     // ── Max hit colours ───────────────────────────────────────────────────────
@@ -194,6 +194,10 @@ public class AggroTagOverlay extends Overlay {
             }
 
             if (plugin.isNpcExcludedByLevel(npc)) {
+                continue;
+            }
+
+            if (plugin.isNpcExcludedByMaxHit(npc)) {
                 continue;
             }
 
@@ -1020,16 +1024,16 @@ public class AggroTagOverlay extends Overlay {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /**
-     * Returns true when the max hit label should be drawn for this NPC. All
-     * three conditions must hold: the per-state toggles allow it, the bundled
-     * wiki data actually has a value, and that value falls inside the
-     * configured min/max window.
+     * Returns true when the max hit label should be drawn for this NPC — the
+     * per-state toggles allow it and the bundled wiki data actually has a
+     * value. NPCs outside the configured max hit window never reach here; they
+     * are dropped from the render loop entirely.
      */
     private boolean shouldShowMaxHit(boolean isAggro, boolean isTargetingPlayer, int maxHit) {
         AggroTagConfig config = plugin.getConfig();
         boolean allowedByState = config.showAllMaxHits()
                 || (isTargetingPlayer ? config.showTargetingMaxHit() : (isAggro && config.showAggroMaxHit()));
-        return allowedByState && maxHit >= 0 && !plugin.isMaxHitHiddenByThreshold(maxHit);
+        return allowedByState && maxHit >= 0;
     }
 
     /**

@@ -27,17 +27,40 @@ class AggroTagRulesTest {
     }
 
     @Test
-    void exposesDisabledMaxHitThresholdsInTheMaxHitSection() throws NoSuchMethodException {
+    void exposesDisabledMaxHitThresholdsDirectlyBelowTheLevelThresholds() throws NoSuchMethodException {
         AggroTagConfig defaults = new AggroTagConfig() { };
-        ConfigItem above = AggroTagConfig.class.getMethod("hideMaxHitAbove").getAnnotation(ConfigItem.class);
-        ConfigItem below = AggroTagConfig.class.getMethod("hideMaxHitBelow").getAnnotation(ConfigItem.class);
+        ConfigItem above = AggroTagConfig.class.getMethod("excludeNpcsAboveMaxHit").getAnnotation(ConfigItem.class);
+        ConfigItem below = AggroTagConfig.class.getMethod("excludeNpcsBelowMaxHit").getAnnotation(ConfigItem.class);
+        ConfigItem belowLevel = AggroTagConfig.class.getMethod("excludeNpcsBelowLevel").getAnnotation(ConfigItem.class);
 
-        assertEquals(0, defaults.hideMaxHitAbove());
-        assertEquals(0, defaults.hideMaxHitBelow());
-        assertEquals("Hide Max Hit > #", above.name());
-        assertEquals("Hide Max Hit < #", below.name());
-        assertEquals(AggroTagConfig.maxHitSection, above.section());
-        assertEquals(AggroTagConfig.maxHitSection, below.section());
+        assertEquals(0, defaults.excludeNpcsAboveMaxHit());
+        assertEquals(0, defaults.excludeNpcsBelowMaxHit());
+        assertEquals("Exclude NPCs > Max Hit", above.name());
+        assertEquals("Exclude NPCs < Max Hit", below.name());
+        // Top level, immediately under the combat level pair — same filter family.
+        assertEquals("", above.section());
+        assertEquals("", below.section());
+        assertEquals(belowLevel.position() + 1, above.position());
+        assertEquals(belowLevel.position() + 2, below.position());
+    }
+
+    /**
+     * The Max Hit section must start below every top-level item, otherwise the
+     * two new filters would collide with the section header's slot.
+     */
+    @Test
+    void keepsTheMaxHitSectionBelowEveryTopLevelItem() throws NoSuchFieldException {
+        int maxHitSectionPosition = AggroTagConfig.class.getDeclaredField("maxHitSection")
+                .getAnnotation(net.runelite.client.config.ConfigSection.class).position();
+        int lowestTopLevel = java.util.Arrays.stream(AggroTagConfig.class.getMethods())
+                .map(m -> m.getAnnotation(ConfigItem.class))
+                .filter(java.util.Objects::nonNull)
+                .filter(c -> c.section().isEmpty())
+                .mapToInt(ConfigItem::position)
+                .max()
+                .orElseThrow(AssertionError::new);
+
+        assertTrue(maxHitSectionPosition > lowestTopLevel);
     }
 
     @Test
@@ -57,27 +80,41 @@ class AggroTagRulesTest {
     }
 
     @Test
-    void zeroMaxHitThresholdsDisableFiltering() {
+    void zeroMaxHitThresholdsDisableNpcFiltering() {
         assertFalse(AggroTagPlugin.isMaxHitExcluded(0, 0, 0));
         assertFalse(AggroTagPlugin.isMaxHitExcluded(70, 0, 0));
         assertFalse(AggroTagPlugin.isMaxHitExcluded(148, 0, 0));
     }
 
     @Test
-    void hidesOnlyMaxHitsStrictlyAboveUpperThreshold() {
+    void excludesOnlyNpcsStrictlyAboveUpperMaxHitThreshold() {
         assertFalse(AggroTagPlugin.isMaxHitExcluded(30, 30, 0));
         assertTrue(AggroTagPlugin.isMaxHitExcluded(31, 30, 0));
     }
 
     @Test
-    void hidesOnlyMaxHitsStrictlyBelowLowerThreshold() {
+    void excludesOnlyNpcsStrictlyBelowLowerMaxHitThreshold() {
         assertFalse(AggroTagPlugin.isMaxHitExcluded(10, 0, 10));
         assertTrue(AggroTagPlugin.isMaxHitExcluded(9, 0, 10));
         assertTrue(AggroTagPlugin.isMaxHitExcluded(0, 0, 10));
     }
 
+    /**
+     * NpcDataLoader.UNKNOWN (-1) means the wiki dataset has no max hit for that
+     * NPC. It is excluded by any lower bound — the same way the combat level
+     * filter excludes NPCs without a combat level — but an upper bound alone
+     * must never hide NPCs just because their max hit is unknown.
+     */
     @Test
-    void combinesMaxHitThresholdsAsAnInclusiveShownRange() {
+    void treatsAnUnknownMaxHitLikeAMissingCombatLevel() {
+        assertFalse(AggroTagPlugin.isMaxHitExcluded(NpcDataLoader.UNKNOWN, 0, 0));
+        assertFalse(AggroTagPlugin.isMaxHitExcluded(NpcDataLoader.UNKNOWN, 30, 0));
+        assertTrue(AggroTagPlugin.isMaxHitExcluded(NpcDataLoader.UNKNOWN, 0, 1));
+        assertTrue(AggroTagPlugin.isMaxHitExcluded(NpcDataLoader.UNKNOWN, 30, 10));
+    }
+
+    @Test
+    void combinesMaxHitThresholdsAsAnInclusiveAllowedRange() {
         assertTrue(AggroTagPlugin.isMaxHitExcluded(9, 30, 10));
         assertFalse(AggroTagPlugin.isMaxHitExcluded(10, 30, 10));
         assertFalse(AggroTagPlugin.isMaxHitExcluded(20, 30, 10));
