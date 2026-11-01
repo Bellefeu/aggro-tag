@@ -382,7 +382,7 @@ public interface AggroTagConfig extends Config {
 
     @ConfigItem(keyName = "npcDataVersion", name = "NPC Data Version", description = "The date npc_data.json was last rebuilt from the OSRS Wiki for aggression and max-hit data.", position = 3, section = npcIdSection)
     default String npcDataVersion() {
-        return "2026-08-20";
+        return "2026-11-01";
     }
 
     // ── EDGE CASES ─────────────────────────────────────────────────────────────

@@ -3,8 +3,10 @@ package com.aggrotag;
 import com.google.gson.Gson;
 
 import java.awt.Color;
+import java.lang.reflect.Proxy;
 import org.junit.jupiter.api.Test;
 
+import net.runelite.api.NPC;
 import net.runelite.client.config.ConfigItem;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -189,5 +191,59 @@ class AggroTagRulesTest {
         // Madness II are applied by the plugin, not baked into the dataset.
         assertEquals(Boolean.TRUE, data.isAggressive(5275));
         assertEquals(Boolean.TRUE, data.isAggressive(5263));
+    }
+
+    /**
+     * Demonic gorillas are a Slayer monster, not a boss. Listing them as one hid
+     * every tag on them — aggro, targeting-you and radius — unless the Bosses
+     * option was turned on.
+     */
+    @Test
+    void tagsDemonicGorillasLikeAnyOtherAggressiveSlayerMonster() {
+        NpcDataLoader data = new NpcDataLoader(new Gson());
+        data.load();
+
+        // Every ID the wiki lists — the gorilla swaps ID as it changes protection prayer.
+        for (int id : new int[] { 7144, 7145, 7146, 7147, 7148, 7149, 7152 }) {
+            NPC gorilla = npc("Demonic gorilla", id);
+            assertFalse(NpcAggroRadius.isBoss(gorilla));
+            assertFalse(NpcAggroRadius.shouldDisableOverlay(gorilla));
+            assertEquals(Boolean.TRUE, data.isAggressive(id));
+        }
+    }
+
+    /**
+     * Plain araxytes are the Morytania Spider Cave slayer monster. Araxxor's own
+     * minions go by other names, so un-listing them must leave the boss alone.
+     */
+    @Test
+    void tagsSlayerAraxytesButStillTreatsAraxxorAsABoss() {
+        NpcDataLoader data = new NpcDataLoader(new Gson());
+        data.load();
+
+        for (int id : new int[] { 11175, 11176, 13666, 13667 }) {
+            NPC araxyte = npc("Araxyte", id);
+            assertFalse(NpcAggroRadius.isBoss(araxyte));
+            assertFalse(NpcAggroRadius.shouldDisableOverlay(araxyte));
+            assertEquals(Boolean.TRUE, data.isAggressive(id));
+        }
+
+        NPC araxxor = npc("Araxxor", 13668);
+        assertTrue(NpcAggroRadius.isBoss(araxxor));
+        assertTrue(NpcAggroRadius.shouldDisableOverlay(araxxor));
+    }
+
+    private static NPC npc(String name, int id) {
+        return (NPC) Proxy.newProxyInstance(NPC.class.getClassLoader(), new Class<?>[] { NPC.class },
+                (proxy, method, args) -> {
+                    switch (method.getName()) {
+                        case "getName":
+                            return name;
+                        case "getId":
+                            return id;
+                        default:
+                            throw new UnsupportedOperationException(method.getName());
+                    }
+                });
     }
 }
