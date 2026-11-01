@@ -233,6 +233,24 @@ class AggroTagRulesTest {
         assertTrue(NpcAggroRadius.shouldDisableOverlay(araxxor));
     }
 
+    /**
+     * Tormented Demons list their max hit as a multi-line {{plainlist}} and their
+     * attack style as "All", which the data build used to drop. They stay
+     * unaggressive: they only fight back once attacked.
+     */
+    @Test
+    void keepsTormentedDemonMaxHitAndAttackStyles() {
+        NpcDataLoader data = new NpcDataLoader(new Gson());
+        data.load();
+
+        int allStyles = NpcDataLoader.STYLE_MELEE | NpcDataLoader.STYLE_RANGED | NpcDataLoader.STYLE_MAGIC;
+        for (int id : new int[] { 13599, 13600, 13601, 13602 }) {
+            assertEquals(31, data.getMaxHit(id));
+            assertEquals(allStyles, data.getAttackStyle(id));
+            assertEquals(Boolean.FALSE, data.isAggressive(id));
+        }
+    }
+
     private static NPC npc(String name, int id) {
         return (NPC) Proxy.newProxyInstance(NPC.class.getClassLoader(), new Class<?>[] { NPC.class },
                 (proxy, method, args) -> {
