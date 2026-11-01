@@ -74,6 +74,27 @@ def parse_aggressive(raw):
     return 0
 
 
+def join_open_templates(lines):
+    """Fold a parameter whose template spans several lines back onto one line.
+
+    Tormented Demon lists its max hit as
+        |max hit = {{plainlist|
+        *31 (auto)
+        *45 (special)}}
+    which a line-by-line parse would otherwise drop. Joining stops at the next
+    parameter, so an unclosed template can never swallow the infobox's ids.
+    """
+    joined = []
+    for line in lines:
+        prev = joined[-1] if joined else ""
+        if (prev.startswith("|") and prev.count("{{") > prev.count("}}")
+                and not line.startswith("|")):
+            joined[-1] = prev + "\n" + line
+        else:
+            joined.append(line)
+    return joined
+
+
 def fetch_json(url, data=None):
     req = urllib.request.Request(url, headers={'User-Agent': UA})
     if data:
@@ -134,8 +155,8 @@ for i in range(0, total, 50):
         # Split by Infobox Monster or Infobox NPC
         boxes = re.split(r"\{\{Infobox (?:Monster|NPC)", wikitext)
         for b in boxes[1:]:
-            lines = b.split("\n")
-            
+            lines = join_open_templates(b.split("\n"))
+
             id_map = {}
             maxhit_map = {}
             aggro_map = {}
@@ -153,7 +174,8 @@ for i in range(0, total, 50):
                 if m:
                     name_map[m.group(1)] = m.group(2).strip()
 
-                m = re.match(r"^\|max hit([0-9]*)\s*=\s*([0-9]+)", line)
+                # The first hit listed is the standard attack, list template or not.
+                m = re.match(r"^\|max hit([0-9]*)\s*=\s*(?:\{\{(?i:plainlist|plain list|ubl|unbulleted list)\|\s*\*?\s*)?([0-9]+)", line)
                 if m:
                     maxhit_map[m.group(1)] = int(m.group(2))
                     
@@ -168,6 +190,7 @@ for i in range(0, total, 50):
                     suffix = m.group(1)
                     val = m.group(2).lower()
                     mask = 0
+                    if val.strip() == "all": mask = 7
                     if re.search(r"melee|crush|slash|stab", val): mask += 1
                     if "ranged" in val: mask += 2
                     if re.search(r"magic|dragonfire", val): mask += 4
