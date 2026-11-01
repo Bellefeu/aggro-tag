@@ -494,7 +494,6 @@ public final class NpcAggroRadius {
         m.put("nex", -1);
         m.put("the whisperer", -1);
         m.put("araxxor", -1);
-        m.put("araxyte", -1);
         m.put("scurrius", -1);
         m.put("the hueycoatl", -1);
         m.put("amoxliatl", -1);
@@ -518,7 +517,6 @@ public final class NpcAggroRadius {
         m.put("phosani's nightmare", -1);
         m.put("tztok-jad", -1);
         m.put("tzkal-zuk", -1);
-        m.put("demonic gorilla", -1);
         m.put("ahrim the blighted", -1);
         m.put("dharok the wretched", -1);
         m.put("guthan the infested", -1);
@@ -675,7 +673,6 @@ public final class NpcAggroRadius {
         b.add("phosani's nightmare");
         b.add("tztok-jad");
         b.add("tzkal-zuk");
-        b.add("demonic gorilla");
         b.add("hespori");
         b.add("giant mole");
         b.add("vardorvis");
@@ -722,7 +719,6 @@ public final class NpcAggroRadius {
         b.add("corrupted hunllef");
         b.add("revenant maledictus");
         b.add("deranged archaeologist");
-        b.add("araxyte");
         b.add("the amoxliatl");
         b.add("tzhaar-ket-rak");
         BOSS_NAMES = Collections.unmodifiableSet(b);
